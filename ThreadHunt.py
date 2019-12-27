@@ -1,5 +1,5 @@
 import wx
-# from PIL import Image, ImageTk
+import time
 
 width = 1600
 height = 960
@@ -15,14 +15,27 @@ class MyFrame(wx.Frame):
 
 
 class WelcomeSplash(wx.Frame):
+    tick = 0
+    pos = [160, 165, 170, 180, 180, 175, 170, 160]
+
     def __init__(self, parent_frame):
         super().__init__(parent=None, title='', style=wx.DEFAULT_FRAME_STYLE &
                          ~(wx.RESIZE_BORDER | wx.MAXIMIZE_BOX))
 
+        self.timer = wx.Timer(self)
+        self.Bind(wx.EVT_TIMER, self.update, self.timer)
+
         png = wx.Image(
             "ThreadHunt800x320.png", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        wx.StaticBitmap(parent=parent_frame, id=-1, bitmap=png,
-                        pos=((width-800)/2, 160))
+        self.splash = wx.StaticBitmap(parent=parent_frame, id=1, bitmap=png,
+                                      pos=((width-800)/2, 160))
+
+        self.timer.Start(250)
+
+    def update(self, timer):
+        self.splash.MoveXY((width-800)/2, self.pos[self.tick])
+        self.splash.Update()
+        self.tick = (self.tick+1) % len(self.pos)
 
 
 class Background(wx.Frame):
