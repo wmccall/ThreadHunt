@@ -15,7 +15,7 @@ class MyFrame(wx.Frame):
 
 
 class WelcomeSplash(wx.Frame):
-    tick = 0
+    tick = 1
     pos = [160, 165, 170, 180, 180, 175, 170, 160]
 
     def __init__(self, parent_frame):
@@ -28,7 +28,7 @@ class WelcomeSplash(wx.Frame):
         png = wx.Image(
             "ThreadHunt800x320.png", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
         self.splash = wx.StaticBitmap(parent=parent_frame, id=1, bitmap=png,
-                                      pos=((width-800)/2, 160))
+                                      pos=((width-800)/2, self.pos[0]))
 
         self.timer.Start(250)
 
@@ -36,6 +36,23 @@ class WelcomeSplash(wx.Frame):
         self.splash.MoveXY((width-800)/2, self.pos[self.tick])
         self.splash.Update()
         self.tick = (self.tick+1) % len(self.pos)
+
+
+class ClickableItems(wx.Frame):
+    def __init__(self, parent_frame):
+        super().__init__(parent=None, title='', style=wx.DEFAULT_FRAME_STYLE &
+                         ~(wx.RESIZE_BORDER | wx.MAXIMIZE_BOX))
+
+        self.parent_frame = parent_frame
+
+        png = wx.Image(
+            "Start320x120.png", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+        self.button = wx.BitmapButton(parent=parent_frame, id=2, bitmap=png,
+                                      pos=((width-320)/2, 540))
+        self.button.Bind(wx.EVT_LEFT_DOWN, self.doMe)
+
+    def doMe(self, event):
+        self.button.Destroy()
 
 
 class Background(wx.Frame):
@@ -75,5 +92,6 @@ if __name__ == "__main__":
     frame.SetDimensions(0, 0, width, height)
     frame.AddChild(Background(frame))
     frame.AddChild(WelcomeSplash(frame))
+    frame.AddChild(ClickableItems(frame))
     frame.AddChild(Foreground(frame))
     app.MainLoop()
