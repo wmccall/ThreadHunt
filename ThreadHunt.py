@@ -45,14 +45,32 @@ class ClickableItems(wx.Frame):
 
         self.parent_frame = parent_frame
 
-        png = wx.Image(
+        start_png = wx.Image(
             "Start320x120.png", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        self.button = wx.BitmapButton(parent=parent_frame, id=2, bitmap=png,
-                                      pos=((width-320)/2, 540))
-        self.button.Bind(wx.EVT_LEFT_DOWN, self.doMe)
+        self.start_button = wx.BitmapButton(parent=parent_frame, id=2, bitmap=start_png,
+                                            pos=((width-320)/2, 540))
+        self.start_button.Bind(wx.EVT_LEFT_DOWN, self.start_clicked)
 
-    def doMe(self, event):
-        self.button.Destroy()
+        info_png = wx.Image(
+            "Info9.png", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+        self.info_button = wx.BitmapButton(parent=parent_frame, id=2, bitmap=info_png,
+                                           pos=(10, 10))
+        self.info_button.Bind(wx.EVT_LEFT_DOWN, self.info_clicked)
+
+        settings_png = wx.Image(
+            "Settings9.png", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+        self.settings_button = wx.BitmapButton(parent=parent_frame, id=2, bitmap=settings_png,
+                                               pos=(130, 10))
+        self.settings_button.Bind(wx.EVT_LEFT_DOWN, self.settings_clicked)
+
+    def start_clicked(self, event):
+        self.start_button.Destroy()
+
+    def info_clicked(self, event):
+        self.info_button.Destroy()
+
+    def settings_clicked(self, event):
+        self.settings_button.Destroy()
 
 
 class Background(wx.Frame):
