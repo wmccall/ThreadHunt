@@ -9,6 +9,12 @@ tile_size = 160
 picture_location = "pictures/"
 number_location = picture_location + "numbers/"
 
+score = 0
+score_ids = ["ZerothDigit", "FirstDigit", "SecondDigit",
+             "ThirdDigit", "FourthDigit", "FifthDigit"]
+score_images = ["Zero35x45.png", "One35x45.png", "Two35x45.png", "Three35x45.png", "Four35x45.png",
+                "Five35x45.png", "Six35x45.png", "Seven35x45.png", "Eight35x45.png", "Nine35x45.png"]
+
 id_strs = []
 global main_frame
 
@@ -134,6 +140,22 @@ class Foreground(wx.Frame):
             xcoord += tile_size
 
 
+class Score(wx.Frame):
+    global score_ids
+
+    def __init__(self, parent_frame):
+        super().__init__(parent=None, title='', style=wx.DEFAULT_FRAME_STYLE &
+                         ~(wx.RESIZE_BORDER | wx.MAXIMIZE_BOX))
+
+        index = 1
+        for score_id in score_ids:
+            digit = wx.Image(
+                number_location + "Zero35x45.png", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+            wx.StaticBitmap(parent=parent_frame, id=str_to_int(score_id), bitmap=digit,
+                            pos=(width - 10 - (index * 35), 10))
+            index += 1
+
+
 class Duck(wx.Frame):
     tick = 1
     vertical_displacement = 5
@@ -161,16 +183,37 @@ class Duck(wx.Frame):
         self.tick = self.tick+1
 
     def duck_clicked(self, event):
-        print("duck_clicked")
         self.duck_button.Destroy()
         self.timer.Stop()
+        add_and_update_score(1000)
 
     def duck_hover(self, event):
         self.duck_button.SetWindowStyleFlag(wx.NO_BORDER)
 
 
+def add_and_update_score(points):
+    global score, score_ids, score_images
+
+    score += points
+    print(score)
+
+    str_score = str(score)[::-1]
+    for index in range(0, 6):
+        int_digit = 0
+        try:
+            int_digit = int(str_score[index])
+        except:
+            pass
+        digit_image = wx.Image(
+            number_location + score_images[int_digit], wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+        wx.FindWindowById(str_to_int(
+            score_ids[index])).SetBitmap(digit_image)
+
+
 def start_game():
     global main_frame
+
+    main_frame.AddChild(Score(main_frame))
 
     main_frame.AddChild(Duck(main_frame))
 
