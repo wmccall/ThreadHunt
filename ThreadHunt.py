@@ -1,5 +1,6 @@
 import wx
 import time
+import random
 
 width = 1600
 height = 960
@@ -14,6 +15,8 @@ score_ids = ["ZerothDigit", "FirstDigit", "SecondDigit",
              "ThirdDigit", "FourthDigit", "FifthDigit"]
 score_images = ["Zero35x45.png", "One35x45.png", "Two35x45.png", "Three35x45.png", "Four35x45.png",
                 "Five35x45.png", "Six35x45.png", "Seven35x45.png", "Eight35x45.png", "Nine35x45.png"]
+
+foreground_objects = []
 
 id_strs = []
 global main_frame
@@ -135,13 +138,14 @@ class Foreground(wx.Frame):
         while xcoord < width:
             png = wx.Image(
                 picture_location + "grass160.png", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-            wx.StaticBitmap(parent=parent_frame, id=str_to_int("ForegroundTile"), bitmap=png,
-                            pos=(xcoord, height-tile_size-35))
+            tile = wx.StaticBitmap(parent=parent_frame, id=str_to_int("ForegroundTile"), bitmap=png,
+                                   pos=(xcoord, height-tile_size-35))
+            foreground_objects.append(tile)
             xcoord += tile_size
 
 
 class Score(wx.Frame):
-    global score_ids
+    global score_ids, foreground_objects
 
     def __init__(self, parent_frame):
         super().__init__(parent=None, title='', style=wx.DEFAULT_FRAME_STYLE &
@@ -151,16 +155,23 @@ class Score(wx.Frame):
         for score_id in score_ids:
             digit = wx.Image(
                 number_location + "Zero35x45.png", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-            wx.StaticBitmap(parent=parent_frame, id=str_to_int(score_id), bitmap=digit,
-                            pos=(width - 10 - (index * 35), 10))
+            digit_bitmap = wx.StaticBitmap(parent=parent_frame, id=str_to_int(score_id), bitmap=digit,
+                                           pos=(width - 10 - (index * 35), 10))
             index += 1
 
 
 class Duck(wx.Frame):
+    global main_frame
     tick = 1
-    vertical_displacement = 5
+    horizontal_displacement = 3
+
+    move_queue_horiz = []
+
+    x_location = random.randint(600, width-600)
+    y_location = height + 100
 
     def __init__(self, parent_frame):
+        global foreground_objects
         super().__init__(parent=None, title='', style=wx.DEFAULT_FRAME_STYLE &
                          ~(wx.RESIZE_BORDER | wx.MAXIMIZE_BOX))
 
@@ -169,16 +180,27 @@ class Duck(wx.Frame):
 
         duck_png = wx.Image(
             number_location + "One35x45.png", wx.BITMAP_TYPE_PNG).ConvertToBitmap()
-        self.duck_button = wx.BitmapButton(parent=parent_frame, id=str_to_int("InfoButton"), bitmap=duck_png,
-                                           pos=(10, 10), style=wx.NO_BORDER)
+        self.duck_button = wx.BitmapButton(parent=parent_frame, id=str_to_int("DuckButton"), bitmap=duck_png,
+                                           pos=(10, self.y_location), style=wx.NO_BORDER)
         self.duck_button.Bind(wx.EVT_LEFT_DOWN, self.duck_clicked)
         self.duck_button.Bind(wx.EVT_ENTER_WINDOW, self.duck_hover)
+
+        for obj in foreground_objects:
+            obj.Destroy()
+        foreground_objects = []
+        main_frame.AddChild(Foreground(main_frame))
 
         self.timer.Start(10)
 
     def update(self, timer):
-        self.duck_button.MoveXY((width-90)/2, height -
-                                90 - (self.tick * self.vertical_displacement))
+        self.y_location -= random.randint(0, 3)
+        if len(self.move_queue_horiz) == 0:
+            direction = random.randint(-1, 1)
+            for i in range(0, random.randint(20, 30)):
+                self.move_queue_horiz.append(direction)
+        self.x_location += self.horizontal_displacement * \
+            self.move_queue_horiz.pop(0)
+        self.duck_button.MoveXY(self.x_location, self.y_location)
         self.duck_button.Update()
         self.tick = self.tick+1
 
