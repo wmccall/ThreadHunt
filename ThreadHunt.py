@@ -162,13 +162,17 @@ class Score(wx.Frame):
 
 class Duck(wx.Frame):
     global main_frame
-    tick = 1
-    horizontal_displacement = 3
+    dir_int = 2
+    directions = [[-1, 0], [-1, 1], [-1, 1], [0, 1],
+                  [0, 1], [1, 1], [1, 1], [1, 0]]
+    speeds = [[5, 0], [3, 2], [3, 2], [0, 4],
+              [0, 4], [2, 3], [2, 3], [5, 0]]
+    image = "DuckLU130.png"
 
-    move_queue_horiz = []
+    move_queue = 5
 
     x_location = random.randint(600, width-600)
-    y_location = height + 100
+    y_location = height
 
     def __init__(self, parent_frame):
         global foreground_objects
@@ -179,7 +183,7 @@ class Duck(wx.Frame):
         self.Bind(wx.EVT_TIMER, self.update, self.timer)
 
         duck_png = wx.Image(
-            number_location + "One35x45.png", wx.BITMAP_TYPE_PNG).ConvertToBitmap()
+            picture_location + self.image, wx.BITMAP_TYPE_PNG).ConvertToBitmap()
         self.duck_button = wx.BitmapButton(parent=parent_frame, id=str_to_int("DuckButton"), bitmap=duck_png,
                                            pos=(10, self.y_location), style=wx.NO_BORDER)
         self.duck_button.Bind(wx.EVT_LEFT_DOWN, self.duck_clicked)
@@ -193,16 +197,57 @@ class Duck(wx.Frame):
         self.timer.Start(10)
 
     def update(self, timer):
-        self.y_location -= random.randint(0, 3)
-        if len(self.move_queue_horiz) == 0:
-            direction = random.randint(-1, 1)
-            for i in range(0, random.randint(20, 30)):
-                self.move_queue_horiz.append(direction)
-        self.x_location += self.horizontal_displacement * \
-            self.move_queue_horiz.pop(0)
+        if self.y_location == -200:
+            self.timer.Stop()
+            self.duck_button.Destroy()
+            print("Flew High")
+            return
+
+        if self.x_location < 300 and self.dir_int < 6:
+            print("l ", end="")
+            change = random.randint(1, 3)
+            self.dir_int += change
+            self.move_queue = random.randint(1, 2)
+        elif self.x_location > width - 300 and self.dir_int > 2:
+            print("r ", end="")
+            change = random.randint(-3, -1)
+            self.dir_int += change
+            self.move_queue = random.randint(1, 2)
+
+        if self.move_queue == 0:
+            change = random.randint(-1, 1)
+            self.dir_int += change
+            self.move_queue = random.randint(5, 17)
+
+        if self.dir_int < 0:
+            self.dir_int = 0
+        elif self.dir_int > len(self.directions)-1:
+            self.dir_int = len(self.directions)-1
+
+        print(f'dir_int: {self.dir_int}, ', end="")
+        current_dir = self.directions[self.dir_int]
+        self.x_location += self.speeds[self.dir_int][0] * current_dir[0]
+        self.y_location -= self.speeds[self.dir_int][1] * current_dir[1]
+        print(
+            f'x: {self.x_location}, y: {self.y_location}, dir: {self.directions[self.dir_int]}, queue: {self.move_queue}')
+        if current_dir[1] == 1:
+            if current_dir[0] == -1:
+                self.image = "DuckLU130.png"
+            elif current_dir[0] == 1:
+                self.image = "DuckRU130.png"
+            else:
+                self.image = "DuckU130.png"
+        else:
+            if current_dir[0] == -1:
+                self.image = "DuckL130.png"
+            else:
+                self.image = "DuckR130.png"
+        duck_img = wx.Image(
+            picture_location + self.image, wx.BITMAP_TYPE_PNG).ConvertToBitmap()
+        self.duck_button.SetBitmap(duck_img)
         self.duck_button.MoveXY(self.x_location, self.y_location)
         self.duck_button.Update()
-        self.tick = self.tick+1
+        self.move_queue -= 1
 
     def duck_clicked(self, event):
         self.duck_button.Destroy()
@@ -234,7 +279,6 @@ def add_and_update_score(points):
 
 def start_game():
     global main_frame
-
     main_frame.AddChild(Score(main_frame))
 
     main_frame.AddChild(Duck(main_frame))
