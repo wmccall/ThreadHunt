@@ -1,6 +1,14 @@
 import wx
 import time
+import math
 import random
+import kill_process
+
+level = 0
+ducks_finished = 0
+ducks_spawned = 0
+ducks_missed = 0
+max_ducks_missed = 3
 
 width = 1600
 height = 960
@@ -13,8 +21,10 @@ number_location = picture_location + "numbers/"
 score = 0
 score_ids = ["ZerothDigit", "FirstDigit", "SecondDigit",
              "ThirdDigit", "FourthDigit", "FifthDigit"]
-score_images = ["Zero35x45.png", "One35x45.png", "Two35x45.png", "Three35x45.png", "Four35x45.png",
-                "Five35x45.png", "Six35x45.png", "Seven35x45.png", "Eight35x45.png", "Nine35x45.png"]
+number_images = ["Zero35x45.png", "One35x45.png", "Two35x45.png", "Three35x45.png", "Four35x45.png",
+                 "Five35x45.png", "Six35x45.png", "Seven35x45.png", "Eight35x45.png", "Nine35x45.png"]
+
+level_ids = ["ZerothLevelDigit", "FirstLevelDigit"]
 
 foreground_objects = []
 
@@ -145,7 +155,7 @@ class Foreground(wx.Frame):
 
 
 class Score(wx.Frame):
-    global score_ids, foreground_objects
+    global score_ids
 
     def __init__(self, parent_frame):
         super().__init__(parent=None, title='', style=wx.DEFAULT_FRAME_STYLE &
@@ -158,6 +168,23 @@ class Score(wx.Frame):
             digit_bitmap = wx.StaticBitmap(parent=parent_frame, id=str_to_int(score_id), bitmap=digit,
                                            pos=(width - 10 - (index * 35), 10))
             index += 1
+
+
+class Level(wx.Frame):
+    global level_ids
+
+    def __init__(self, parent_frame):
+        super().__init__(parent=None, title='', style=wx.DEFAULT_FRAME_STYLE &
+                         ~(wx.RESIZE_BORDER | wx.MAXIMIZE_BOX))
+
+        index = 1
+        for score_id in level_ids:
+            digit = wx.Image(
+                number_location + "Zero35x45.png", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+            digit_bitmap = wx.StaticBitmap(parent=parent_frame, id=str_to_int(score_id), bitmap=digit,
+                                           pos=((width/2) - (index * 35), 10))
+            index += 1
+        increment_level()
 
 
 class Duck(wx.Frame):
@@ -197,19 +224,20 @@ class Duck(wx.Frame):
         self.timer.Start(10)
 
     def update(self, timer):
+        global ducks_finished, ducks_missed
         if self.y_location == -200:
             self.timer.Stop()
             self.duck_button.Destroy()
             print("Flew High")
+            ducks_finished += 1
+            ducks_missed += 1
             return
 
         if self.x_location < 300 and self.dir_int < 6:
-            print("l ", end="")
             change = random.randint(1, 3)
             self.dir_int += change
             self.move_queue = random.randint(1, 2)
         elif self.x_location > width - 300 and self.dir_int > 2:
-            print("r ", end="")
             change = random.randint(-3, -1)
             self.dir_int += change
             self.move_queue = random.randint(1, 2)
@@ -224,12 +252,11 @@ class Duck(wx.Frame):
         elif self.dir_int > len(self.directions)-1:
             self.dir_int = len(self.directions)-1
 
-        print(f'dir_int: {self.dir_int}, ', end="")
         current_dir = self.directions[self.dir_int]
         self.x_location += self.speeds[self.dir_int][0] * current_dir[0]
         self.y_location -= self.speeds[self.dir_int][1] * current_dir[1]
-        print(
-            f'x: {self.x_location}, y: {self.y_location}, dir: {self.directions[self.dir_int]}, queue: {self.move_queue}')
+        # print(
+        # f'x: {self.x_location}, y: {self.y_location}, dir: {self.directions[self.dir_int]}, queue: {self.move_queue}')
         if current_dir[1] == 1:
             if current_dir[0] == -1:
                 self.image = "DuckLU130.png"
@@ -250,16 +277,19 @@ class Duck(wx.Frame):
         self.move_queue -= 1
 
     def duck_clicked(self, event):
+        global ducks_finished
         self.duck_button.Destroy()
         self.timer.Stop()
-        add_and_update_score(1000)
+        process_id, process_name = kill_process.kill_random_user_process()
+        add_and_update_score(int(process_id))
+        ducks_finished += 1
 
     def duck_hover(self, event):
         self.duck_button.SetWindowStyleFlag(wx.NO_BORDER)
 
 
 def add_and_update_score(points):
-    global score, score_ids, score_images
+    global score, score_ids, number_images
 
     score += points
     print(score)
@@ -272,16 +302,61 @@ def add_and_update_score(points):
         except:
             pass
         digit_image = wx.Image(
-            number_location + score_images[int_digit], wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+            number_location + number_images[int_digit], wx.BITMAP_TYPE_ANY).ConvertToBitmap()
         wx.FindWindowById(str_to_int(
             score_ids[index])).SetBitmap(digit_image)
+
+
+def increment_level():
+    global level, level_ids, number_images
+
+    level += 1
+
+    str_level = str(level)[::-1]
+    for index in range(0, 2):
+        int_digit = 0
+        try:
+            int_digit = int(str_level[index])
+        except:
+            pass
+        digit_image = wx.Image(
+            number_location + number_images[int_digit], wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+        wx.FindWindowById(str_to_int(
+            level_ids[index])).SetBitmap(digit_image)
+
+
+class Game(wx.Frame):
+
+    def __init__(self, parent_frame):
+        super().__init__(parent=None, title='', style=wx.DEFAULT_FRAME_STYLE &
+                         ~(wx.RESIZE_BORDER | wx.MAXIMIZE_BOX))
+        self.timer = wx.Timer(self)
+        self.Bind(wx.EVT_TIMER, self.update, self.timer)
+        self.timer.Start(3000)
+
+    def update(self, timer):
+        global main_frame, level, ducks_finished, ducks_missed, ducks_spawned, max_ducks_missed
+        ducks_for_level = math.ceil(level/2)
+
+        print(f'level: {level}, ducks_finished: {ducks_finished}, ducks_missed: {ducks_missed}, ducks_spawned: {ducks_spawned}, max_ducks_missed: {max_ducks_missed}')
+
+        if ducks_missed == max_ducks_missed:
+            self.timer.Stop()
+            # end game
+        elif ducks_spawned < ducks_for_level:
+            main_frame.AddChild(Duck(main_frame))
+            ducks_spawned += 1
+        elif ducks_finished == ducks_for_level:
+            ducks_finished = 0
+            ducks_spawned = 0
+            increment_level()
 
 
 def start_game():
     global main_frame
     main_frame.AddChild(Score(main_frame))
-
-    main_frame.AddChild(Duck(main_frame))
+    main_frame.AddChild(Level(main_frame))
+    main_frame.AddChild(Game(main_frame))
 
 
 if __name__ == "__main__":
