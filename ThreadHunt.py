@@ -17,12 +17,19 @@ tile_size = 160
 
 picture_location = "pictures/"
 number_location = picture_location + "numbers/"
+letter_location = picture_location + "letters/"
+char_exten = "35x45.png"
 
 score = 0
 score_ids = ["ZerothDigit", "FirstDigit", "SecondDigit",
              "ThirdDigit", "FourthDigit", "FifthDigit"]
-number_images = ["Zero35x45.png", "One35x45.png", "Two35x45.png", "Three35x45.png", "Four35x45.png",
-                 "Five35x45.png", "Six35x45.png", "Seven35x45.png", "Eight35x45.png", "Nine35x45.png"]
+number_images = [x + char_exten for x in ["Zero", "One", "Two", "Three", "Four",
+                                          "Five", "Six", "Seven", "Eight", "Nine"]]
+
+letters = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L",
+           "M", "N", "O",  "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "Qu", "Ex"]
+letter_images = [x + char_exten for x in letters]
+letter_dict = dict(zip(letters, letter_images))
 
 level_ids = ["ZerothLevelDigit", "FirstLevelDigit"]
 
@@ -280,7 +287,8 @@ class Duck(wx.Frame):
         global ducks_finished
         self.duck_button.Destroy()
         self.timer.Stop()
-        process_id, process_name = kill_process.kill_random_user_process()
+        process_id, process_name = kill_process.kill_random_user_process(
+            dry=True)
         add_and_update_score(int(process_id))
         ducks_finished += 1
 
