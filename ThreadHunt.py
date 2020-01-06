@@ -4,6 +4,8 @@ import math
 import random
 import kill_process
 
+# pylint: disable=no-member
+
 level = 0
 ducks_finished = 0
 ducks_spawned = 0
@@ -194,6 +196,15 @@ class Level(wx.Frame):
         increment_level()
 
 
+class Kill(wx.Frame):
+    global main_frame
+
+    def __init__(self, parent_frame, pos, program):
+        super().__init__(parent=None, title='', style=wx.DEFAULT_FRAME_STYLE &
+                         ~(wx.RESIZE_BORDER | wx.MAXIMIZE_BOX))
+        print(pos, program)
+
+
 class Duck(wx.Frame):
     global main_frame
     dir_int = 2
@@ -290,6 +301,8 @@ class Duck(wx.Frame):
         process_id, process_name = kill_process.kill_random_user_process(
             dry=True)
         add_and_update_score(int(process_id))
+        main_frame.AddChild(
+            Kill(main_frame, (self.x_location, self.y_location), process_name))
         ducks_finished += 1
 
     def duck_hover(self, event):
