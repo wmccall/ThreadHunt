@@ -29,9 +29,11 @@ number_images = [x + char_exten for x in ["Zero", "One", "Two", "Three", "Four",
                                           "Five", "Six", "Seven", "Eight", "Nine"]]
 
 letters = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L",
-           "M", "N", "O",  "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "Qu", "Ex"]
-letter_images = [x + char_exten for x in letters]
-letter_dict = dict(zip(letters, letter_images))
+           "M", "N", "O",  "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
+extras = ["?", "!", "-"]
+extras_converted = ["Qu", "Ex", "Da"]
+letter_images = [x + char_exten for x in letters+extras_converted]
+letter_dict = dict(zip(letters+extras, letter_images))
 
 level_ids = ["ZerothLevelDigit", "FirstLevelDigit"]
 
@@ -203,6 +205,26 @@ class Kill(wx.Frame):
         super().__init__(parent=None, title='', style=wx.DEFAULT_FRAME_STYLE &
                          ~(wx.RESIZE_BORDER | wx.MAXIMIZE_BOX))
         print(pos, program)
+
+        killed = "KILLED"
+        prog_upper = program.upper()
+
+        index = 0
+        for killed_char in killed:
+            letter_img = wx.Image(
+                letter_location + letter_dict[killed_char], wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+            wx.StaticBitmap(parent=parent_frame, id=-1, bitmap=letter_img,
+                            pos=((pos[0] + (index * 35), pos[1])))
+            index += 1
+
+        index = 0
+        for prog_char in prog_upper:
+
+            letter_img = wx.Image(
+                letter_location + letter_dict[prog_char], wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+            wx.StaticBitmap(parent=parent_frame, id=-1, bitmap=letter_img,
+                            pos=((pos[0] + (index * 35), pos[1]+45)))
+            index += 1
 
 
 class Duck(wx.Frame):
