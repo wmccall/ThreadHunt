@@ -176,8 +176,8 @@ class Score(wx.Frame):
         for score_id in score_ids:
             digit = wx.Image(
                 number_location + "Zero35x45.png", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-            digit_bitmap = wx.StaticBitmap(parent=parent_frame, id=str_to_int(score_id), bitmap=digit,
-                                           pos=(width - 10 - (index * 35), 10))
+            wx.StaticBitmap(parent=parent_frame, id=str_to_int(score_id), bitmap=digit,
+                            pos=(width - 10 - (index * 35), 10))
             index += 1
 
 
@@ -192,8 +192,8 @@ class Level(wx.Frame):
         for score_id in level_ids:
             digit = wx.Image(
                 number_location + "Zero35x45.png", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-            digit_bitmap = wx.StaticBitmap(parent=parent_frame, id=str_to_int(score_id), bitmap=digit,
-                                           pos=((width/2) - (index * 35), 10))
+            wx.StaticBitmap(parent=parent_frame, id=str_to_int(score_id), bitmap=digit,
+                            pos=((width/2) - (index * 35), 10))
             index += 1
         increment_level()
 
