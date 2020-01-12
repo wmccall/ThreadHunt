@@ -30,8 +30,8 @@ number_images = [x + char_exten for x in ["Zero", "One", "Two", "Three", "Four",
 
 letters = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L",
            "M", "N", "O",  "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
-extras = ["?", "!", "-"]
-extras_converted = ["Qu", "Ex", "Da"]
+extras = ["?", "!", "-", ":", " "]
+extras_converted = ["Qu", "Ex", "Da", "Co", "Sp"]
 letter_images = [x + char_exten for x in letters+extras_converted]
 letter_dict = dict(zip(letters+extras, letter_images))
 
@@ -189,11 +189,17 @@ class Level(wx.Frame):
                          ~(wx.RESIZE_BORDER | wx.MAXIMIZE_BOX))
 
         index = 1
-        for score_id in level_ids:
+        for character in "LEVEL: ":
+            char = wx.Image(
+                letter_location + letter_dict[character], wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+            wx.StaticBitmap(parent=parent_frame, id=-1, bitmap=char,
+                            pos=((width/2) - ((6-index) * 35), 10))
+            index += 1
+        for score_id in reversed(level_ids):
             digit = wx.Image(
                 number_location + "Zero35x45.png", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
             wx.StaticBitmap(parent=parent_frame, id=str_to_int(score_id), bitmap=digit,
-                            pos=((width/2) - (index * 35), 10))
+                            pos=((width/2) - ((6-index) * 35), 10))
             index += 1
         increment_level()
 
@@ -321,7 +327,7 @@ class Duck(wx.Frame):
         self.duck_button.Destroy()
         self.timer.Stop()
         process_id, process_name = kill_process.kill_random_user_process(
-            dry=True)
+            dry=False)
         add_and_update_score(int(process_id))
         main_frame.AddChild(
             Kill(main_frame, (self.x_location, self.y_location), process_name))
