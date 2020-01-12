@@ -30,12 +30,13 @@ number_images = [x + char_exten for x in ["Zero", "One", "Two", "Three", "Four",
 
 letters = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L",
            "M", "N", "O",  "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
-extras = ["?", "!", "-", ":", " "]
-extras_converted = ["Qu", "Ex", "Da", "Co", "Sp"]
+extras = ["?", "!", "-", ":", " ", "/"]
+extras_converted = ["Qu", "Ex", "Da", "Co", "Sp", "Sl"]
 letter_images = [x + char_exten for x in letters+extras_converted]
 letter_dict = dict(zip(letters+extras, letter_images))
 
 level_ids = ["ZerothLevelDigit", "FirstLevelDigit"]
+missed_id = "ZerothMissedDigit"
 
 foreground_objects = []
 
@@ -193,15 +194,49 @@ class Level(wx.Frame):
             char = wx.Image(
                 letter_location + letter_dict[character], wx.BITMAP_TYPE_ANY).ConvertToBitmap()
             wx.StaticBitmap(parent=parent_frame, id=-1, bitmap=char,
-                            pos=((width/2) - ((6-index) * 35), 10))
+                            pos=((width/2) + ((index - 15) * 35), 10))
             index += 1
-        for score_id in reversed(level_ids):
+        for level_id in reversed(level_ids):
             digit = wx.Image(
                 number_location + "Zero35x45.png", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-            wx.StaticBitmap(parent=parent_frame, id=str_to_int(score_id), bitmap=digit,
-                            pos=((width/2) - ((6-index) * 35), 10))
+            wx.StaticBitmap(parent=parent_frame, id=str_to_int(level_id), bitmap=digit,
+                            pos=((width/2) + ((index - 15) * 35), 10))
             index += 1
         increment_level()
+
+
+class Missed(wx.Frame):
+    global missed_id
+
+    def __init__(self, parent_frame):
+        super().__init__(parent=None, title='', style=wx.DEFAULT_FRAME_STYLE &
+                         ~(wx.RESIZE_BORDER | wx.MAXIMIZE_BOX))
+
+        index = 1
+        for character in "MISSED: ":
+            char = wx.Image(
+                letter_location + letter_dict[character], wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+            wx.StaticBitmap(parent=parent_frame, id=-1, bitmap=char,
+                            pos=((width/2) + ((index - 1) * 35), 10))
+            index += 1
+
+        digit = wx.Image(
+            number_location + "Zero35x45.png", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+        wx.StaticBitmap(parent=parent_frame, id=str_to_int(missed_id), bitmap=digit,
+                        pos=((width/2) + ((index - 1) * 35), 10))
+        index += 1
+
+        char = wx.Image(
+            letter_location + letter_dict["/"], wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+        wx.StaticBitmap(parent=parent_frame, id=-1, bitmap=char,
+                        pos=((width/2) + ((index - 1) * 35), 10))
+        index += 1
+
+        char = wx.Image(
+            number_location + number_images[max_ducks_missed], wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+        wx.StaticBitmap(parent=parent_frame, id=-1, bitmap=char,
+                        pos=((width/2) + ((index - 1) * 35), 10))
+        index += 1
 
 
 class Kill(wx.Frame):
@@ -271,12 +306,15 @@ class Duck(wx.Frame):
 
     def update(self, timer):
         global ducks_finished, ducks_missed
-        if self.y_location == -200:
+        if ducks_missed == max_ducks_missed:
+            self.timer.Stop()
+            return
+        if self.y_location <= -131:
             self.timer.Stop()
             self.duck_button.Destroy()
             print("Flew High")
             ducks_finished += 1
-            ducks_missed += 1
+            increment_missed()
             return
 
         if self.x_location < 300 and self.dir_int < 6:
@@ -374,6 +412,17 @@ def increment_level():
             level_ids[index])).SetBitmap(digit_image)
 
 
+def increment_missed():
+    global ducks_missed, missed_id, number_images
+
+    ducks_missed += 1
+
+    digit_image = wx.Image(
+        number_location + number_images[ducks_missed], wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+    wx.FindWindowById(str_to_int(
+        missed_id)).SetBitmap(digit_image)
+
+
 class Game(wx.Frame):
 
     def __init__(self, parent_frame):
@@ -391,6 +440,7 @@ class Game(wx.Frame):
 
         if ducks_missed == max_ducks_missed:
             self.timer.Stop()
+            print("Stopping game")
             # end game
         elif ducks_spawned < ducks_for_level:
             main_frame.AddChild(Duck(main_frame))
@@ -405,6 +455,7 @@ def start_game():
     global main_frame
     main_frame.AddChild(Score(main_frame))
     main_frame.AddChild(Level(main_frame))
+    main_frame.AddChild(Missed(main_frame))
     main_frame.AddChild(Game(main_frame))
 
 
