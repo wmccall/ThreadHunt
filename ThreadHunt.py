@@ -12,6 +12,11 @@ ducks_spawned = 0
 ducks_missed = 0
 max_ducks_missed = 3
 
+paused = False
+
+total_timers = 0
+timers = {}
+
 width = 1600
 height = 960
 root_coord = 0
@@ -115,6 +120,16 @@ class ClickableItems(wx.Frame):
         self.start_button.SetWindowStyleFlag(wx.NO_BORDER)
 
     def info_clicked(self, event):
+        global paused, timers
+        print(timers)
+        if paused:
+            paused = False
+            for index in timers:
+                timers[index][0].Start(timers[index][1])
+        else:
+            paused = True
+            for index in timers:
+                timers[index][0].Stop()
         print("info_clicked")
 
     def info_hover(self, event):
@@ -275,6 +290,7 @@ class Duck(wx.Frame):
                          ~(wx.RESIZE_BORDER | wx.MAXIMIZE_BOX))
 
         self.timer = wx.Timer(self)
+        self.timer_number = add_timer([self.timer, 10])
         self.Bind(wx.EVT_TIMER, self.update, self.timer)
 
         duck_png = wx.Image(
@@ -295,9 +311,11 @@ class Duck(wx.Frame):
         global ducks_finished, ducks_missed
         if ducks_missed == max_ducks_missed:
             self.timer.Stop()
+            remove_timer(self.timer_number)
             return
         if self.y_location <= -131:
             self.timer.Stop()
+            remove_timer(self.timer_number)
             self.duck_button.Destroy()
             print("Flew High")
             ducks_finished += 1
@@ -348,15 +366,16 @@ class Duck(wx.Frame):
         self.move_queue -= 1
 
     def duck_clicked(self, event):
-        global ducks_finished
-        self.duck_button.Destroy()
-        self.timer.Stop()
-        process_id, process_name = kill_process.kill_random_user_process(
-            dry=False)
-        add_and_update_score(int(process_id))
-        main_frame.AddChild(
-            Kill(main_frame, (self.x_location, self.y_location), process_name))
-        ducks_finished += 1
+        global ducks_finished, paused
+        if not paused:
+            self.duck_button.Destroy()
+            self.timer.Stop()
+            process_id, process_name = kill_process.kill_random_user_process(
+                dry=False)
+            add_and_update_score(int(process_id))
+            main_frame.AddChild(
+                Kill(main_frame, (self.x_location, self.y_location), process_name))
+            ducks_finished += 1
 
     def duck_hover(self, event):
         self.duck_button.SetWindowStyleFlag(wx.NO_BORDER)
@@ -410,12 +429,24 @@ def increment_missed():
         missed_id)).SetBitmap(digit_image)
 
 
-class Game(wx.Frame):
+def add_timer(timer):
+    global timers, total_timers
+    total_timers += 1
+    timers[total_timers] = timer
+    return total_timers
 
+
+def remove_timer(timer_number):
+    global timers
+    del(timers[timer_number])
+
+
+class Game(wx.Frame):
     def __init__(self, parent_frame):
         super().__init__(parent=None, title='', style=wx.DEFAULT_FRAME_STYLE &
                          ~(wx.RESIZE_BORDER | wx.MAXIMIZE_BOX))
         self.timer = wx.Timer(self)
+        self.timer_number = add_timer([self.timer, 3000])
         self.Bind(wx.EVT_TIMER, self.update, self.timer)
         self.timer.Start(3000)
 
@@ -428,6 +459,7 @@ class Game(wx.Frame):
         if ducks_missed == max_ducks_missed:
             self.timer.Stop()
             print("Stopping game")
+            remove_timer(self.timer_number)
             # end game
         elif ducks_spawned < ducks_for_level:
             main_frame.AddChild(Duck(main_frame))
