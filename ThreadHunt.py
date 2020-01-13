@@ -2,6 +2,7 @@ import wx
 import time
 import math
 import random
+import csv
 import kill_process
 
 # pylint: disable=no-member
@@ -11,6 +12,9 @@ ducks_finished = 0
 ducks_spawned = 0
 ducks_missed = 0
 max_ducks_missed = 3
+
+high_scores = {}
+game_number = 0
 
 paused = False
 
@@ -35,8 +39,8 @@ number_images = [x + char_exten for x in ["Zero", "One", "Two", "Three", "Four",
 
 letters = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L",
            "M", "N", "O",  "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
-extras = ["?", "!", "-", ":", " ", "/"]
-extras_converted = ["Qu", "Ex", "Da", "Co", "Sp", "Sl"]
+extras = ["?", "!", "-", ":", " ", "/", "(", ")"]
+extras_converted = ["Qu", "Ex", "Da", "Co", "Sp", "Sl", "Lp", "Rp"]
 letter_images = [x + char_exten for x in letters+extras_converted]
 letter_dict = dict(zip(letters+extras, letter_images))
 
@@ -375,6 +379,7 @@ class Duck(wx.Frame):
             add_and_update_score(int(process_id))
             main_frame.AddChild(
                 Kill(main_frame, (self.x_location, self.y_location), process_name))
+            update_high_scores_csv()
             ducks_finished += 1
 
     def duck_hover(self, event):
@@ -460,7 +465,8 @@ class Game(wx.Frame):
             self.timer.Stop()
             print("Stopping game")
             remove_timer(self.timer_number)
-            # end game
+            update_high_scores_csv()
+            increment_game()
         elif ducks_spawned < ducks_for_level:
             main_frame.AddChild(Duck(main_frame))
             ducks_spawned += 1
@@ -478,8 +484,43 @@ def start_game():
     main_frame.AddChild(Game(main_frame))
 
 
+def read_high_scores_csv():
+    global high_scores, game_number
+    with open('highscores.csv') as csv_file:
+        csv_reader = csv.reader(csv_file, delimiter=',')
+        line_count = 0
+        game_and_highscore = {}
+        for row in csv_reader:
+            game_and_highscore[row[0]] = row[1]
+            line_count += 1
+        print(f'Highscores: {len(game_and_highscore)}\n{game_and_highscore}')
+        game_number = len(game_and_highscore)
+        high_scores = game_and_highscore
+
+
+def update_high_score():
+    global high_scores, game_number, score
+    high_scores[game_number] = score
+
+
+def update_high_scores_csv():
+    global high_scores
+    update_high_score()
+    with open('highscores.csv', mode='w') as csv_file:
+        writer = csv.writer(csv_file, delimiter=',',
+                            quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        for index in high_scores:
+            writer.writerow([index, high_scores[index]])
+
+
+def increment_game():
+    global game_number
+    game_number += 1
+
+
 if __name__ == "__main__":
     global main_frame
+    read_high_scores_csv()
     app = wx.App()
     main_frame = MainFrame()
     main_frame.SetDimensions(0, 0, width, height)
