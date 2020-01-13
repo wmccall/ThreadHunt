@@ -28,20 +28,17 @@ root_coord = 0
 tile_size = 160
 
 picture_location = "pictures/"
-number_location = picture_location + "numbers/"
 letter_location = picture_location + "letters/"
 char_exten = "35x45.png"
 
 
 score_ids = ["ZerothDigit", "FirstDigit", "SecondDigit",
              "ThirdDigit", "FourthDigit", "FifthDigit"]
-number_images = [x + char_exten for x in ["Zero", "One", "Two", "Three", "Four",
-                                          "Five", "Six", "Seven", "Eight", "Nine"]]
 
 letters = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L",
            "M", "N", "O",  "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
-extras = ["?", "!", "-", ":", " ", "/", "(", ")"]
-extras_converted = ["Qu", "Ex", "Da", "Co", "Sp", "Sl", "Lp", "Rp"]
+extras = ["?", "!", "-", ":", " ", "/", "(", ")", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" ]
+extras_converted = ["Qu", "Ex", "Da", "Co", "Sp", "Sl", "Lp", "Rp", "Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"]
 letter_images = [x + char_exten for x in letters+extras_converted]
 letter_dict = dict(zip(letters+extras, letter_images))
 
@@ -183,7 +180,7 @@ class Score(wx.Frame):
         index = 1
         for score_id in score_ids:
             digit = wx.Image(
-                number_location + "Zero35x45.png", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+                letter_location + "Zero35x45.png", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
             wx.StaticBitmap(parent=parent_frame, id=str_to_int(score_id), bitmap=digit,
                             pos=(width - 10 - (index * 35), 10))
             index += 1
@@ -214,7 +211,7 @@ class GameOver(wx.Frame):
 
         for character in str(score):
             char = wx.Image(
-                number_location + number_images[int(character)], wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+                letter_location + letter_dict[character], wx.BITMAP_TYPE_ANY).ConvertToBitmap()
             wx.StaticBitmap(parent=parent_frame, id=str_to_int("TempElement"), bitmap=char,
                             pos=((width/2) + ((index - 5) * 35), (height/4)+45))
             index += 1
@@ -252,7 +249,7 @@ class Level(wx.Frame):
             index += 1
         for level_id in reversed(level_ids):
             digit = wx.Image(
-                number_location + "Zero35x45.png", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+                letter_location + "Zero35x45.png", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
             wx.StaticBitmap(parent=parent_frame, id=str_to_int(level_id), bitmap=digit,
                             pos=((width/2) + ((index - 15) * 35), 10))
             index += 1
@@ -275,7 +272,7 @@ class Missed(wx.Frame):
             index += 1
 
         digit = wx.Image(
-            number_location + "Zero35x45.png", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+            letter_location + "Zero35x45.png", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
         wx.StaticBitmap(parent=parent_frame, id=str_to_int(missed_id), bitmap=digit,
                         pos=((width/2) + ((index - 1) * 35), 10))
         index += 1
@@ -287,7 +284,7 @@ class Missed(wx.Frame):
         index += 1
 
         char = wx.Image(
-            number_location + number_images[max_ducks_missed], wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+            letter_location + letter_dict[str(max_ducks_missed)], wx.BITMAP_TYPE_ANY).ConvertToBitmap()
         wx.StaticBitmap(parent=parent_frame, id=str_to_int("TempElement"), bitmap=char,
                         pos=((width/2) + ((index - 1) * 35), 10))
         index += 1
@@ -435,7 +432,7 @@ class Duck(wx.Frame):
 
 
 def add_and_update_score(points):
-    global score, score_ids, number_images
+    global score, score_ids, letter_dict
 
     score += points
     print(score)
@@ -448,13 +445,13 @@ def add_and_update_score(points):
         except:
             pass
         digit_image = wx.Image(
-            number_location + number_images[int_digit], wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+            letter_location + letter_dict[str(int_digit)], wx.BITMAP_TYPE_ANY).ConvertToBitmap()
         wx.FindWindowById(str_to_int(
             score_ids[index])).SetBitmap(digit_image)
 
 
 def increment_level():
-    global level, level_ids, number_images
+    global level, level_ids, letter_dict
 
     level += 1
 
@@ -466,18 +463,18 @@ def increment_level():
         except:
             pass
         digit_image = wx.Image(
-            number_location + number_images[int_digit], wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+            letter_location + letter_dict[str(int_digit)], wx.BITMAP_TYPE_ANY).ConvertToBitmap()
         wx.FindWindowById(str_to_int(
             level_ids[index])).SetBitmap(digit_image)
 
 
 def increment_missed():
-    global ducks_missed, missed_id, number_images
+    global ducks_missed, missed_id, letter_dict
 
     ducks_missed += 1
 
     digit_image = wx.Image(
-        number_location + number_images[ducks_missed], wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+        letter_location + letter_dict[str(ducks_missed)], wx.BITMAP_TYPE_ANY).ConvertToBitmap()
     wx.FindWindowById(str_to_int(
         missed_id)).SetBitmap(digit_image)
 
@@ -496,9 +493,8 @@ def remove_timer(timer_number):
 
 def remove_all_timers():
     global timers
-    for num in range(0, len(timers)):
-        del(timers[num])
-    print(f'timers: {timers}')
+    for timer_num in timers:
+        del(timers[timer_num])
 
 
 def clean_temp_elements():
