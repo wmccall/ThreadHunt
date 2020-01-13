@@ -10,7 +10,7 @@ import kill_process
 level = 0
 ducks_finished = 0
 ducks_spawned = 0
-ducks_missed = 2
+ducks_missed = 0
 score = 0
 max_ducks_missed = 3
 
@@ -201,7 +201,7 @@ class GameOver(wx.Frame):
             char = wx.Image(
                 letter_location + letter_dict[character], wx.BITMAP_TYPE_ANY).ConvertToBitmap()
             wx.StaticBitmap(parent=parent_frame, id=str_to_int("TempElement"), bitmap=char,
-                            pos=((width/2) + ((index - 5) * 35), height/2))
+                            pos=((width/2) + ((index - 5) * 35), height/4))
             index += 1
 
         index = 1
@@ -209,15 +209,31 @@ class GameOver(wx.Frame):
             char = wx.Image(
                 letter_location + letter_dict[character], wx.BITMAP_TYPE_ANY).ConvertToBitmap()
             wx.StaticBitmap(parent=parent_frame, id=str_to_int("TempElement"), bitmap=char,
-                            pos=((width/2) + ((index - 5) * 35), (height/2)+45))
+                            pos=((width/2) + ((index - 5) * 35), (height/4)+45))
             index += 1
 
         for character in str(score):
             char = wx.Image(
                 number_location + number_images[int(character)], wx.BITMAP_TYPE_ANY).ConvertToBitmap()
             wx.StaticBitmap(parent=parent_frame, id=str_to_int("TempElement"), bitmap=char,
-                            pos=((width/2) + ((index - 5) * 35), (height/2)+45))
+                            pos=((width/2) + ((index - 5) * 35), (height/4)+45))
             index += 1
+
+        home_png = wx.Image(
+            picture_location + "Home320x120.png", wx.BITMAP_TYPE_PNG).ConvertToBitmap()
+        self.home_button = wx.BitmapButton(parent=parent_frame, id=str_to_int("HomeButton"), bitmap=home_png,
+                                           pos=((width-320)/2, (height/2)+90), style=wx.NO_BORDER)
+        self.home_button.Bind(wx.EVT_LEFT_DOWN, self.home_clicked)
+        self.home_button.Bind(wx.EVT_ENTER_WINDOW, self.home_hover)
+
+    def home_clicked(self, event):
+        wx.FindWindowById(str_to_int("StartButton")).Show()
+        wx.FindWindowById(str_to_int("WelcomeSplash")).Show()
+        self.home_button.Destroy()
+        clean_temp_elements()
+
+    def home_hover(self, event):
+        self.home_button.SetWindowStyleFlag(wx.NO_BORDER)
 
 
 class Level(wx.Frame):
@@ -478,11 +494,25 @@ def remove_timer(timer_number):
     del(timers[timer_number])
 
 
+def remove_all_timers():
+    global timers
+    for num in range(0, len(timers)):
+        del(timers[num])
+    print(f'timers: {timers}')
+
+
 def clean_temp_elements():
     element = wx.FindWindowById(str_to_int("TempElement"))
     while element is not None:
         element.Destroy()
         element = wx.FindWindowById(str_to_int("TempElement"))
+
+
+def clean_ducks_elements():
+    element = wx.FindWindowById(str_to_int("DuckButton"))
+    while element is not None:
+        element.Destroy()
+        element = wx.FindWindowById(str_to_int("DuckButton"))
 
 
 def clean_whole_screen():
@@ -493,6 +523,7 @@ def clean_whole_screen():
     wx.FindWindowById(str_to_int(missed_id)).Destroy()
 
     clean_temp_elements()
+    clean_ducks_elements()
 
 
 class Game(wx.Frame):
@@ -515,6 +546,7 @@ class Game(wx.Frame):
             print("Stopping game")
             remove_timer(self.timer_number)
             update_high_scores_csv()
+            remove_all_timers()
             clean_whole_screen()
             main_frame.AddChild(GameOver(main_frame))
             reset_game()
