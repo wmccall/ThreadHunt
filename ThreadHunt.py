@@ -3,6 +3,7 @@ import time
 import math
 import random
 import csv
+from datetime import datetime
 import kill_process
 
 # pylint: disable=no-member
@@ -16,6 +17,9 @@ max_ducks_missed = 3
 
 high_scores = {}
 game_number = 0
+
+dt_now = datetime.now()
+dt_string = dt_now.strftime("%d/%m/%Y %H:%M")
 
 paused = False
 
@@ -47,7 +51,7 @@ missed_id = "ZerothMissedDigit"
 
 foreground_objects = []
 
-id_strs = ["TempElement"]
+id_strs = ["TempElement", "HighScore"]
 global main_frame
 
 
@@ -123,15 +127,16 @@ class ClickableItems(wx.Frame):
 
     def info_clicked(self, event):
         global paused, timers
-        print(timers)
         if paused:
             paused = False
             for index in timers:
                 timers[index][0].Start(timers[index][1])
+            hide_high_scores()
         else:
             paused = True
             for index in timers:
                 timers[index][0].Stop()
+            show_high_scores()
         print("info_clicked")
 
     def info_hover(self, event):
@@ -503,6 +508,12 @@ def clean_temp_elements():
         element.Destroy()
         element = wx.FindWindowById(str_to_int("TempElement"))
 
+def clean_high_score_elements():
+    element = wx.FindWindowById(str_to_int("HighScore"))
+    while element is not None:
+        element.Destroy()
+        element = wx.FindWindowById(str_to_int("HighScore"))
+
 
 def clean_ducks_elements():
     element = wx.FindWindowById(str_to_int("DuckButton"))
@@ -520,6 +531,55 @@ def clean_whole_screen():
 
     clean_temp_elements()
     clean_ducks_elements()
+
+def show_high_scores():
+    global main_frame
+
+    img = wx.Image(
+            picture_location + "CrossOut90.png", wx.BITMAP_TYPE_PNG).ConvertToBitmap()
+    wx.FindWindowById(str_to_int("HighScoreButton")).SetBitmap(img)
+
+    png = wx.Image(
+        picture_location + "HighScoreBackground1200x640.png", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+    wx.StaticBitmap(parent=main_frame, id=str_to_int("HighScore"), bitmap=png,
+                                    pos=((width-1200)/2, 160))
+    index = 1
+    for character in "HIGH SCORES":
+        char = wx.Image(
+            letter_location + letter_dict[character], wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+        wx.StaticBitmap(parent=main_frame, id=str_to_int("HighScore"), bitmap=char,
+                        pos=((width/2) + ((index - 6) * 35), 170))
+        index += 1
+    index = 1
+    for character in "DEVELOPED BY: WMCCALL":
+        char = wx.Image(
+            letter_location + letter_dict[character], wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+        wx.StaticBitmap(parent=main_frame, id=str_to_int("HighScore"), bitmap=char,
+                        pos=((width/2) + ((index - 11) * 35), 750))
+        index += 1
+
+    flat_scores = []
+    for element in high_scores:
+        flat_scores.append(high_scores[element])
+    flat_scores.sort()
+    count = 0
+    for element in reversed(flat_scores):
+        if count > 9:
+            break
+        index = 1
+        for character in element[1] + " - " + str(element[0]):
+            char = wx.Image(
+                letter_location + letter_dict[character], wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+            wx.StaticBitmap(parent=main_frame, id=str_to_int("HighScore"), bitmap=char,
+                            pos=((width/2) + ((index - 16) * 35), 230 + (45 * count)))
+            index += 1
+        count += 1
+
+def hide_high_scores():
+    clean_high_score_elements()
+    img = wx.Image(
+            picture_location + "Trophy90.png", wx.BITMAP_TYPE_PNG).ConvertToBitmap()
+    wx.FindWindowById(str_to_int("HighScoreButton")).SetBitmap(img)
 
 
 class Game(wx.Frame):
@@ -571,7 +631,7 @@ def read_high_scores_csv():
         line_count = 0
         game_and_highscore = {}
         for row in csv_reader:
-            game_and_highscore[row[0]] = row[1]
+            game_and_highscore[row[0]] = [row[1], row[2]]
             line_count += 1
         print(f'Highscores: {len(game_and_highscore)}\n{game_and_highscore}')
         game_number = len(game_and_highscore)
@@ -579,8 +639,8 @@ def read_high_scores_csv():
 
 
 def update_high_score():
-    global high_scores, game_number, score
-    high_scores[game_number] = score
+    global high_scores, game_number, score, dt_string
+    high_scores[game_number] = [score, dt_string]
 
 
 def update_high_scores_csv():
@@ -590,16 +650,18 @@ def update_high_scores_csv():
         writer = csv.writer(csv_file, delimiter=',',
                             quotechar='"', quoting=csv.QUOTE_MINIMAL)
         for index in high_scores:
-            writer.writerow([index, high_scores[index]])
+            writer.writerow([index, high_scores[index][0], high_scores[index][1]])
 
 
 def reset_game():
-    global level, ducks_finished, ducks_spawned, ducks_missed, score
+    global level, ducks_finished, ducks_spawned, ducks_missed, score, dt_now, dt_string
     level = 0
     ducks_finished = 0
     ducks_spawned = 0
     ducks_missed = 0
     score = 0
+    dt_now = datetime.now()
+    dt_string =dt_now.strftime("%d/%m/%Y %H:%M")
 
 
 def increment_game():
