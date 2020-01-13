@@ -37,7 +37,7 @@ char_exten = "35x45.png"
 
 
 score_ids = ["ZerothDigit", "FirstDigit", "SecondDigit",
-             "ThirdDigit", "FourthDigit", "FifthDigit"]
+             "ThirdDigit", "FourthDigit", "FifthDigit", "SixthDigit", "SeventhDigit"]
 
 letters = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L",
            "M", "N", "O",  "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
@@ -446,7 +446,7 @@ def add_and_update_score(points):
     print(score)
 
     str_score = str(score)[::-1]
-    for index in range(0, 6):
+    for index in range(0, len(score_ids)):
         int_digit = 0
         try:
             int_digit = int(str_score[index])
@@ -501,8 +501,11 @@ def remove_timer(timer_number):
 
 def remove_all_timers():
     global timers
-    for timer_num in timers:
-        del(timers[timer_num])
+    try:
+        for timer_num in timers:
+            del(timers[timer_num])
+    except:
+        pass
 
 
 def clean_temp_elements():
@@ -643,7 +646,7 @@ def read_high_scores_csv():
 
 def update_high_score():
     global high_scores, game_number, score, dt_string
-    high_scores[game_number] = [score, dt_string]
+    high_scores[game_number] = [str(score), dt_string]
 
 
 def update_high_scores_csv():
