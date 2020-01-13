@@ -118,9 +118,11 @@ class ClickableItems(wx.Frame):
         self.info_button.Bind(wx.EVT_ENTER_WINDOW, self.info_hover)
 
     def start_clicked(self, event):
-        self.start_button.Hide()
-        wx.FindWindowById(str_to_int("WelcomeSplash")).Hide()
-        start_game()
+        global paused
+        if not paused:
+            self.start_button.Hide()
+            wx.FindWindowById(str_to_int("WelcomeSplash")).Hide()
+            start_game()
 
     def start_hover(self, event):
         self.start_button.SetWindowStyleFlag(wx.NO_BORDER)
@@ -137,7 +139,6 @@ class ClickableItems(wx.Frame):
             for index in timers:
                 timers[index][0].Stop()
             show_high_scores()
-        print("info_clicked")
 
     def info_hover(self, event):
         self.info_button.SetWindowStyleFlag(wx.NO_BORDER)
@@ -229,10 +230,12 @@ class GameOver(wx.Frame):
         self.home_button.Bind(wx.EVT_ENTER_WINDOW, self.home_hover)
 
     def home_clicked(self, event):
-        wx.FindWindowById(str_to_int("StartButton")).Show()
-        wx.FindWindowById(str_to_int("WelcomeSplash")).Show()
-        self.home_button.Destroy()
-        clean_temp_elements()
+        global paused
+        if not paused:
+            wx.FindWindowById(str_to_int("StartButton")).Show()
+            wx.FindWindowById(str_to_int("WelcomeSplash")).Show()
+            self.home_button.Destroy()
+            clean_temp_elements()
 
     def home_hover(self, event):
         self.home_button.SetWindowStyleFlag(wx.NO_BORDER)
