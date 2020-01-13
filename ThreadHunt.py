@@ -100,18 +100,11 @@ class ClickableItems(wx.Frame):
         self.start_button.Bind(wx.EVT_ENTER_WINDOW, self.start_hover)
 
         info_png = wx.Image(
-            picture_location + "Info9.png", wx.BITMAP_TYPE_PNG).ConvertToBitmap()
-        self.info_button = wx.BitmapButton(parent=parent_frame, id=str_to_int("InfoButton"), bitmap=info_png,
+            picture_location + "Trophy90.png", wx.BITMAP_TYPE_PNG).ConvertToBitmap()
+        self.info_button = wx.BitmapButton(parent=parent_frame, id=str_to_int("HighScoreButton"), bitmap=info_png,
                                            pos=(10, 10), style=wx.NO_BORDER)
         self.info_button.Bind(wx.EVT_LEFT_DOWN, self.info_clicked)
         self.info_button.Bind(wx.EVT_ENTER_WINDOW, self.info_hover)
-
-        settings_png = wx.Image(
-            picture_location + "Settings9.png", wx.BITMAP_TYPE_PNG).ConvertToBitmap()
-        self.settings_button = wx.BitmapButton(parent=parent_frame, id=str_to_int("SettingsButton"), bitmap=settings_png,
-                                               pos=(130, 10), style=wx.NO_BORDER)
-        self.settings_button.Bind(wx.EVT_LEFT_DOWN, self.settings_clicked)
-        self.settings_button.Bind(wx.EVT_ENTER_WINDOW, self.settings_hover)
 
     def start_clicked(self, event):
         self.start_button.Hide()
@@ -126,12 +119,6 @@ class ClickableItems(wx.Frame):
 
     def info_hover(self, event):
         self.info_button.SetWindowStyleFlag(wx.NO_BORDER)
-
-    def settings_clicked(self, event):
-        print("settings_clicked")
-
-    def settings_hover(self, event):
-        self.settings_button.SetWindowStyleFlag(wx.NO_BORDER)
 
 
 class Background(wx.Frame):
