@@ -10,7 +10,8 @@ import kill_process
 level = 0
 ducks_finished = 0
 ducks_spawned = 0
-ducks_missed = 0
+ducks_missed = 2
+score = 0
 max_ducks_missed = 3
 
 high_scores = {}
@@ -31,7 +32,7 @@ number_location = picture_location + "numbers/"
 letter_location = picture_location + "letters/"
 char_exten = "35x45.png"
 
-score = 0
+
 score_ids = ["ZerothDigit", "FirstDigit", "SecondDigit",
              "ThirdDigit", "FourthDigit", "FifthDigit"]
 number_images = [x + char_exten for x in ["Zero", "One", "Two", "Three", "Four",
@@ -49,7 +50,7 @@ missed_id = "ZerothMissedDigit"
 
 foreground_objects = []
 
-id_strs = []
+id_strs = ["TempElement"]
 global main_frame
 
 
@@ -188,6 +189,37 @@ class Score(wx.Frame):
             index += 1
 
 
+class GameOver(wx.Frame):
+    global level_ids, score
+
+    def __init__(self, parent_frame):
+        super().__init__(parent=None, title='', style=wx.DEFAULT_FRAME_STYLE &
+                         ~(wx.RESIZE_BORDER | wx.MAXIMIZE_BOX))
+
+        index = 1
+        for character in "GAME OVER":
+            char = wx.Image(
+                letter_location + letter_dict[character], wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+            wx.StaticBitmap(parent=parent_frame, id=str_to_int("TempElement"), bitmap=char,
+                            pos=((width/2) + ((index - 5) * 35), height/2))
+            index += 1
+
+        index = 1
+        for character in "SCORE: ":
+            char = wx.Image(
+                letter_location + letter_dict[character], wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+            wx.StaticBitmap(parent=parent_frame, id=str_to_int("TempElement"), bitmap=char,
+                            pos=((width/2) + ((index - 5) * 35), (height/2)+45))
+            index += 1
+
+        for character in str(score):
+            char = wx.Image(
+                number_location + number_images[int(character)], wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+            wx.StaticBitmap(parent=parent_frame, id=str_to_int("TempElement"), bitmap=char,
+                            pos=((width/2) + ((index - 5) * 35), (height/2)+45))
+            index += 1
+
+
 class Level(wx.Frame):
     global level_ids
 
@@ -199,7 +231,7 @@ class Level(wx.Frame):
         for character in "LEVEL: ":
             char = wx.Image(
                 letter_location + letter_dict[character], wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-            wx.StaticBitmap(parent=parent_frame, id=-1, bitmap=char,
+            wx.StaticBitmap(parent=parent_frame, id=str_to_int("TempElement"), bitmap=char,
                             pos=((width/2) + ((index - 15) * 35), 10))
             index += 1
         for level_id in reversed(level_ids):
@@ -222,7 +254,7 @@ class Missed(wx.Frame):
         for character in "MISSED: ":
             char = wx.Image(
                 letter_location + letter_dict[character], wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-            wx.StaticBitmap(parent=parent_frame, id=-1, bitmap=char,
+            wx.StaticBitmap(parent=parent_frame, id=str_to_int("TempElement"), bitmap=char,
                             pos=((width/2) + ((index - 1) * 35), 10))
             index += 1
 
@@ -234,13 +266,13 @@ class Missed(wx.Frame):
 
         char = wx.Image(
             letter_location + letter_dict["/"], wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        wx.StaticBitmap(parent=parent_frame, id=-1, bitmap=char,
+        wx.StaticBitmap(parent=parent_frame, id=str_to_int("TempElement"), bitmap=char,
                         pos=((width/2) + ((index - 1) * 35), 10))
         index += 1
 
         char = wx.Image(
             number_location + number_images[max_ducks_missed], wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        wx.StaticBitmap(parent=parent_frame, id=-1, bitmap=char,
+        wx.StaticBitmap(parent=parent_frame, id=str_to_int("TempElement"), bitmap=char,
                         pos=((width/2) + ((index - 1) * 35), 10))
         index += 1
 
@@ -260,7 +292,7 @@ class Kill(wx.Frame):
         for killed_char in killed:
             letter_img = wx.Image(
                 letter_location + letter_dict[killed_char], wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-            wx.StaticBitmap(parent=parent_frame, id=-1, bitmap=letter_img,
+            wx.StaticBitmap(parent=parent_frame, id=str_to_int("TempElement"), bitmap=letter_img,
                             pos=((pos[0] + (index * 35), pos[1])))
             index += 1
 
@@ -269,7 +301,7 @@ class Kill(wx.Frame):
 
             letter_img = wx.Image(
                 letter_location + letter_dict[prog_char], wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-            wx.StaticBitmap(parent=parent_frame, id=-1, bitmap=letter_img,
+            wx.StaticBitmap(parent=parent_frame, id=str_to_int("TempElement"), bitmap=letter_img,
                             pos=((pos[0] + (index * 35), pos[1]+45)))
             index += 1
 
@@ -446,6 +478,23 @@ def remove_timer(timer_number):
     del(timers[timer_number])
 
 
+def clean_temp_elements():
+    element = wx.FindWindowById(str_to_int("TempElement"))
+    while element is not None:
+        element.Destroy()
+        element = wx.FindWindowById(str_to_int("TempElement"))
+
+
+def clean_whole_screen():
+    for id in level_ids:
+        wx.FindWindowById(str_to_int(id)).Destroy()
+    for id in score_ids:
+        wx.FindWindowById(str_to_int(id)).Destroy()
+    wx.FindWindowById(str_to_int(missed_id)).Destroy()
+
+    clean_temp_elements()
+
+
 class Game(wx.Frame):
     def __init__(self, parent_frame):
         super().__init__(parent=None, title='', style=wx.DEFAULT_FRAME_STYLE &
@@ -466,6 +515,9 @@ class Game(wx.Frame):
             print("Stopping game")
             remove_timer(self.timer_number)
             update_high_scores_csv()
+            clean_whole_screen()
+            main_frame.AddChild(GameOver(main_frame))
+            reset_game()
             increment_game()
         elif ducks_spawned < ducks_for_level:
             main_frame.AddChild(Duck(main_frame))
@@ -511,6 +563,15 @@ def update_high_scores_csv():
                             quotechar='"', quoting=csv.QUOTE_MINIMAL)
         for index in high_scores:
             writer.writerow([index, high_scores[index]])
+
+
+def reset_game():
+    global level, ducks_finished, ducks_spawned, ducks_missed, score
+    level = 0
+    ducks_finished = 0
+    ducks_spawned = 0
+    ducks_missed = 0
+    score = 0
 
 
 def increment_game():
