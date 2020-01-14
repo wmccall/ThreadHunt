@@ -567,9 +567,10 @@ def show_high_scores():
     flat_scores = []
     for element in high_scores:
         flat_scores.append(high_scores[element])
-    flat_scores.sort()
+
+    sorted_scores = sorted(flat_scores, key=lambda cur_score: int(cur_score[0])) 
     count = 0
-    for element in reversed(flat_scores):
+    for element in reversed(sorted_scores):
         if count > 9:
             break
         index = 1
