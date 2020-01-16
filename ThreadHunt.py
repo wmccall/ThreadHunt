@@ -310,9 +310,6 @@ class Kill(wx.Frame):
     def __init__(self, parent_frame, pos, program):
         super().__init__(parent=None, title='', style=wx.DEFAULT_FRAME_STYLE &
                          ~(wx.RESIZE_BORDER | wx.MAXIMIZE_BOX))
-        print(pos, program)
-
-        killed = "KILLED"
         prog_upper = program.upper()
 
         index = 0
@@ -380,7 +377,6 @@ class Duck(wx.Frame):
             self.timer.Stop()
             remove_timer(self.timer_number)
             self.duck_button.Destroy()
-            print("Flew High")
             ducks_finished += 1
             increment_missed()
             return
@@ -407,8 +403,6 @@ class Duck(wx.Frame):
         current_dir = self.directions[self.dir_int]
         self.x_location += self.speeds[self.dir_int][0] * current_dir[0]
         self.y_location -= self.speeds[self.dir_int][1] * current_dir[1]
-        # print(
-        # f'x: {self.x_location}, y: {self.y_location}, dir: {self.directions[self.dir_int]}, queue: {self.move_queue}')
         if current_dir[1] == 1:
             if current_dir[0] == -1:
                 self.image = "DuckLU130.png"
@@ -449,7 +443,6 @@ def add_and_update_score(points):
     global score, score_ids
 
     score += points
-    print(score)
 
     str_score = str(score)[::-1]
     for index in range(0, len(score_ids)):
@@ -608,11 +601,8 @@ class Game(wx.Frame):
         global main_frame, level, ducks_finished, ducks_missed, ducks_spawned, max_ducks_missed
         ducks_for_level = math.ceil(level/2)
 
-        print(f'level: {level}, ducks_finished: {ducks_finished}, ducks_missed: {ducks_missed}, ducks_spawned: {ducks_spawned}, max_ducks_missed: {max_ducks_missed}')
-
         if ducks_missed == max_ducks_missed:
             self.timer.Stop()
-            print("Stopping game")
             remove_timer(self.timer_number)
             update_high_scores_csv()
             remove_all_timers()
@@ -646,7 +636,6 @@ def read_high_scores_csv():
         for row in csv_reader:
             game_and_highscore[row[0]] = [row[1], row[2]]
             line_count += 1
-        print(f'Highscores: {len(game_and_highscore)}\n{game_and_highscore}')
         game_number = len(game_and_highscore)
         high_scores = game_and_highscore
 
