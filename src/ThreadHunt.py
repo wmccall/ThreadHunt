@@ -4,7 +4,7 @@ import math
 import random
 import csv
 from datetime import datetime
-import kill_process
+import util
 
 # pylint: disable=no-member
 
@@ -31,8 +31,8 @@ height = 960
 root_coord = 0
 tile_size = 160
 
-picture_location = "pictures/"
-letter_location = picture_location + "letters/"
+picture_location = "src/images/"
+letter_location = picture_location + "characters/"
 char_exten = "35x45.png"
 
 
@@ -313,7 +313,7 @@ class Kill(wx.Frame):
         prog_upper = program.upper()
 
         index = 0
-        for killed_char in killed:
+        for killed_char in "KILLED":
             letter_img = wx.Image(
                 letter_location + get_char_image(killed_char), wx.BITMAP_TYPE_ANY).ConvertToBitmap()
             wx.StaticBitmap(parent=parent_frame, id=str_to_int("TempElement"), bitmap=letter_img,
@@ -427,7 +427,7 @@ class Duck(wx.Frame):
         if not paused:
             self.duck_button.Destroy()
             self.timer.Stop()
-            process_id, process_name = kill_process.kill_random_user_process(
+            process_id, process_name = util.kill_random_user_process(
                 dry=False)
             add_and_update_score(int(process_id))
             main_frame.AddChild(
