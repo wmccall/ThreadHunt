@@ -31,44 +31,18 @@ height = 960
 root_coord = 0
 tile_size = 160
 
-picture_location = "src/images/"
-letter_location = picture_location + "characters/"
-char_exten = "35x45.png"
-
 
 score_ids = ["ZerothDigit", "FirstDigit", "SecondDigit",
              "ThirdDigit", "FourthDigit", "FifthDigit", "SixthDigit", "SeventhDigit"]
 
-letters = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L",
-           "M", "N", "O",  "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
-extras = ["?", "!", "-", ":", " ", "/", "(", ")", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" ]
-extras_converted = ["Qu", "Ex", "Da", "Co", "Sp", "Sl", "Lp", "Rp", "Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"]
-letter_images = [x + char_exten for x in letters+extras_converted]
-letter_dict = dict(zip(letters+extras, letter_images))
 
 level_ids = ["ZerothLevelDigit", "FirstLevelDigit"]
 missed_id = "ZerothMissedDigit"
 
 foreground_objects = []
 
-id_strs = ["TempElement", "HighScore"]
+
 global main_frame
-
-def get_char_image(char):
-    image = letter_dict.get(char.upper())
-    if image is None:
-        return letter_dict["-"]
-    return image
-
-
-def str_to_int(id_str):
-    global id_strs
-    try:
-        location = id_strs.index(id_str)
-        return location
-    except:
-        id_strs.append(id_str)
-        return len(id_strs)-1
 
 
 class MainFrame(wx.Frame):
@@ -89,15 +63,14 @@ class WelcomeSplash(wx.Frame):
         self.timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.update, self.timer)
 
-        png = wx.Image(
-            picture_location + "ThreadHunt800x320.png", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        self.splash = wx.StaticBitmap(parent=parent_frame, id=str_to_int("WelcomeSplash"), bitmap=png,
+        png = util.get_picture("ThreadHunt800x320.png")
+        self.splash = wx.StaticBitmap(parent=parent_frame, id=util.str_to_int("WelcomeSplash"), bitmap=png,
                                       pos=((width-800)/2, self.pos[0]))
 
         self.timer.Start(250)
 
     def update(self, timer):
-        self.splash.MoveXY((width-800)/2, self.pos[self.tick])
+        self.splash.Move(x=(width-800)/2, y=self.pos[self.tick])
         self.splash.Update()
         self.tick = (self.tick+1) % len(self.pos)
 
@@ -109,16 +82,14 @@ class ClickableItems(wx.Frame):
 
         self.parent_frame = parent_frame
 
-        start_png = wx.Image(
-            picture_location + "Start320x120.png", wx.BITMAP_TYPE_PNG).ConvertToBitmap()
-        self.start_button = wx.BitmapButton(parent=parent_frame, id=str_to_int("StartButton"), bitmap=start_png,
+        start_png = util.get_picture("Start320x120.png")
+        self.start_button = wx.BitmapButton(parent=parent_frame, id=util.str_to_int("StartButton"), bitmap=start_png,
                                             pos=((width-320)/2, 540), style=wx.NO_BORDER)
         self.start_button.Bind(wx.EVT_LEFT_DOWN, self.start_clicked)
         self.start_button.Bind(wx.EVT_ENTER_WINDOW, self.start_hover)
 
-        info_png = wx.Image(
-            picture_location + "Trophy90.png", wx.BITMAP_TYPE_PNG).ConvertToBitmap()
-        self.info_button = wx.BitmapButton(parent=parent_frame, id=str_to_int("HighScoreButton"), bitmap=info_png,
+        info_png = util.get_picture("Trophy90.png")
+        self.info_button = wx.BitmapButton(parent=parent_frame, id=util.str_to_int("HighScoreButton"), bitmap=info_png,
                                            pos=(10, 10), style=wx.NO_BORDER)
         self.info_button.Bind(wx.EVT_LEFT_DOWN, self.info_clicked)
         self.info_button.Bind(wx.EVT_ENTER_WINDOW, self.info_hover)
@@ -127,7 +98,7 @@ class ClickableItems(wx.Frame):
         global paused
         if not paused:
             self.start_button.Hide()
-            wx.FindWindowById(str_to_int("WelcomeSplash")).Hide()
+            wx.FindWindowById(util.str_to_int("WelcomeSplash")).Hide()
             start_game()
 
     def start_hover(self, event):
@@ -159,9 +130,8 @@ class Background(wx.Frame):
 
         while ycoord < height:
             while xcoord < width:
-                png = wx.Image(
-                    picture_location + "sky160.png", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-                wx.StaticBitmap(parent=parent_frame, id=str_to_int("BackgroundTile"), bitmap=png,
+                png = util.get_picture("sky160.png")
+                wx.StaticBitmap(parent=parent_frame, id=util.str_to_int("BackgroundTile"), bitmap=png,
                                 pos=(xcoord, ycoord))
                 xcoord += tile_size
             ycoord += tile_size
@@ -174,9 +144,8 @@ class Foreground(wx.Frame):
                          ~(wx.RESIZE_BORDER | wx.MAXIMIZE_BOX))
         xcoord = root_coord
         while xcoord < width:
-            png = wx.Image(
-                picture_location + "grass160.png", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-            tile = wx.StaticBitmap(parent=parent_frame, id=str_to_int("ForegroundTile"), bitmap=png,
+            png = util.get_picture("grass160.png")
+            tile = wx.StaticBitmap(parent=parent_frame, id=util.str_to_int("ForegroundTile"), bitmap=png,
                                    pos=(xcoord, height-tile_size-35))
             foreground_objects.append(tile)
             xcoord += tile_size
@@ -191,9 +160,8 @@ class Score(wx.Frame):
 
         index = 1
         for score_id in score_ids:
-            digit = wx.Image(
-                letter_location + "Zero35x45.png", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-            wx.StaticBitmap(parent=parent_frame, id=str_to_int(score_id), bitmap=digit,
+            digit = util.get_char_image("0")
+            wx.StaticBitmap(parent=parent_frame, id=util.str_to_int(score_id), bitmap=digit,
                             pos=(width - 10 - (index * 35), 10))
             index += 1
 
@@ -207,30 +175,26 @@ class GameOver(wx.Frame):
 
         index = 1
         for character in "GAME OVER":
-            char = wx.Image(
-                letter_location + get_char_image(character), wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-            wx.StaticBitmap(parent=parent_frame, id=str_to_int("TempElement"), bitmap=char,
+            char = util.get_char_image(character)
+            wx.StaticBitmap(parent=parent_frame, id=util.str_to_int("TempElement"), bitmap=char,
                             pos=((width/2) + ((index - 5) * 35), height/4))
             index += 1
 
         index = 1
         for character in "SCORE: ":
-            char = wx.Image(
-                letter_location + get_char_image(character), wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-            wx.StaticBitmap(parent=parent_frame, id=str_to_int("TempElement"), bitmap=char,
+            char = util.get_char_image(character)
+            wx.StaticBitmap(parent=parent_frame, id=util.str_to_int("TempElement"), bitmap=char,
                             pos=((width/2) + ((index - 5) * 35), (height/4)+45))
             index += 1
 
         for character in str(score):
-            char = wx.Image(
-                letter_location + get_char_image(character), wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-            wx.StaticBitmap(parent=parent_frame, id=str_to_int("TempElement"), bitmap=char,
+            char = util.get_char_image(character)
+            wx.StaticBitmap(parent=parent_frame, id=util.str_to_int("TempElement"), bitmap=char,
                             pos=((width/2) + ((index - 5) * 35), (height/4)+45))
             index += 1
 
-        home_png = wx.Image(
-            picture_location + "Home320x120.png", wx.BITMAP_TYPE_PNG).ConvertToBitmap()
-        self.home_button = wx.BitmapButton(parent=parent_frame, id=str_to_int("HomeButton"), bitmap=home_png,
+        home_png = util.get_picture("Home320x120.png")
+        self.home_button = wx.BitmapButton(parent=parent_frame, id=util.str_to_int("HomeButton"), bitmap=home_png,
                                            pos=((width-320)/2, (height/2)+90), style=wx.NO_BORDER)
         self.home_button.Bind(wx.EVT_LEFT_DOWN, self.home_clicked)
         self.home_button.Bind(wx.EVT_ENTER_WINDOW, self.home_hover)
@@ -238,8 +202,8 @@ class GameOver(wx.Frame):
     def home_clicked(self, event):
         global paused
         if not paused:
-            wx.FindWindowById(str_to_int("StartButton")).Show()
-            wx.FindWindowById(str_to_int("WelcomeSplash")).Show()
+            wx.FindWindowById(util.str_to_int("StartButton")).Show()
+            wx.FindWindowById(util.str_to_int("WelcomeSplash")).Show()
             self.home_button.Destroy()
             clean_temp_elements()
 
@@ -256,15 +220,13 @@ class Level(wx.Frame):
 
         index = 1
         for character in "LEVEL: ":
-            char = wx.Image(
-                letter_location + get_char_image(character), wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-            wx.StaticBitmap(parent=parent_frame, id=str_to_int("TempElement"), bitmap=char,
+            char = util.get_char_image(character)
+            wx.StaticBitmap(parent=parent_frame, id=util.str_to_int("TempElement"), bitmap=char,
                             pos=((width/2) + ((index - 15) * 35), 10))
             index += 1
         for level_id in reversed(level_ids):
-            digit = wx.Image(
-                letter_location + "Zero35x45.png", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-            wx.StaticBitmap(parent=parent_frame, id=str_to_int(level_id), bitmap=digit,
+            digit = util.get_char_image("0")
+            wx.StaticBitmap(parent=parent_frame, id=util.str_to_int(level_id), bitmap=digit,
                             pos=((width/2) + ((index - 15) * 35), 10))
             index += 1
         increment_level()
@@ -279,27 +241,23 @@ class Missed(wx.Frame):
 
         index = 1
         for character in "MISSED: ":
-            char = wx.Image(
-                letter_location + get_char_image(character), wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-            wx.StaticBitmap(parent=parent_frame, id=str_to_int("TempElement"), bitmap=char,
+            char = util.get_char_image(character)
+            wx.StaticBitmap(parent=parent_frame, id=util.str_to_int("TempElement"), bitmap=char,
                             pos=((width/2) + ((index - 1) * 35), 10))
             index += 1
 
-        digit = wx.Image(
-            letter_location + "Zero35x45.png", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        wx.StaticBitmap(parent=parent_frame, id=str_to_int(missed_id), bitmap=digit,
+        digit = util.get_char_image("0")
+        wx.StaticBitmap(parent=parent_frame, id=util.str_to_int(missed_id), bitmap=digit,
                         pos=((width/2) + ((index - 1) * 35), 10))
         index += 1
 
-        char = wx.Image(
-            letter_location + get_char_image("/"), wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        wx.StaticBitmap(parent=parent_frame, id=str_to_int("TempElement"), bitmap=char,
+        char = util.get_char_image("/")
+        wx.StaticBitmap(parent=parent_frame, id=util.str_to_int("TempElement"), bitmap=char,
                         pos=((width/2) + ((index - 1) * 35), 10))
         index += 1
 
-        char = wx.Image(
-            letter_location + get_char_image(str(max_ducks_missed)), wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        wx.StaticBitmap(parent=parent_frame, id=str_to_int("TempElement"), bitmap=char,
+        char = util.get_char_image(str(max_ducks_missed))
+        wx.StaticBitmap(parent=parent_frame, id=util.str_to_int("TempElement"), bitmap=char,
                         pos=((width/2) + ((index - 1) * 35), 10))
         index += 1
 
@@ -314,18 +272,16 @@ class Kill(wx.Frame):
 
         index = 0
         for killed_char in "KILLED":
-            letter_img = wx.Image(
-                letter_location + get_char_image(killed_char), wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-            wx.StaticBitmap(parent=parent_frame, id=str_to_int("TempElement"), bitmap=letter_img,
+            letter_img = util.get_char_image(killed_char)
+            wx.StaticBitmap(parent=parent_frame, id=util.str_to_int("TempElement"), bitmap=letter_img,
                             pos=((pos[0] + (index * 35), pos[1])))
             index += 1
 
         index = 0
         for prog_char in prog_upper:
 
-            letter_img = wx.Image(
-                letter_location + get_char_image(prog_char), wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-            wx.StaticBitmap(parent=parent_frame, id=str_to_int("TempElement"), bitmap=letter_img,
+            letter_img = util.get_char_image(prog_char)
+            wx.StaticBitmap(parent=parent_frame, id=util.str_to_int("TempElement"), bitmap=letter_img,
                             pos=((pos[0] + (index * 35), pos[1]+45)))
             index += 1
 
@@ -353,9 +309,8 @@ class Duck(wx.Frame):
         self.timer_number = add_timer([self.timer, 10])
         self.Bind(wx.EVT_TIMER, self.update, self.timer)
 
-        duck_png = wx.Image(
-            picture_location + self.image, wx.BITMAP_TYPE_PNG).ConvertToBitmap()
-        self.duck_button = wx.BitmapButton(parent=parent_frame, id=str_to_int("DuckButton"), bitmap=duck_png,
+        duck_png = util.get_picture(self.image)
+        self.duck_button = wx.BitmapButton(parent=parent_frame, id=util.str_to_int("DuckButton"), bitmap=duck_png,
                                            pos=(10, self.y_location), style=wx.NO_BORDER)
         self.duck_button.Bind(wx.EVT_LEFT_DOWN, self.duck_clicked)
         self.duck_button.Bind(wx.EVT_ENTER_WINDOW, self.duck_hover)
@@ -415,10 +370,9 @@ class Duck(wx.Frame):
                 self.image = "DuckL130.png"
             else:
                 self.image = "DuckR130.png"
-        duck_img = wx.Image(
-            picture_location + self.image, wx.BITMAP_TYPE_PNG).ConvertToBitmap()
+        duck_img = util.get_picture(self.image)
         self.duck_button.SetBitmap(duck_img)
-        self.duck_button.MoveXY(self.x_location, self.y_location)
+        self.duck_button.Move(x=self.x_location, y=self.y_location)
         self.duck_button.Update()
         self.move_queue -= 1
 
@@ -451,9 +405,8 @@ def add_and_update_score(points):
             int_digit = int(str_score[index])
         except:
             pass
-        digit_image = wx.Image(
-            letter_location + get_char_image(str(int_digit)), wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        wx.FindWindowById(str_to_int(
+        digit_image = util.get_char_image(str(int_digit))
+        wx.FindWindowById(util.str_to_int(
             score_ids[index])).SetBitmap(digit_image)
 
 
@@ -469,9 +422,8 @@ def increment_level():
             int_digit = int(str_level[index])
         except:
             pass
-        digit_image = wx.Image(
-            letter_location + get_char_image(str(int_digit)), wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        wx.FindWindowById(str_to_int(
+        digit_image = util.get_char_image(str(int_digit))
+        wx.FindWindowById(util.str_to_int(
             level_ids[index])).SetBitmap(digit_image)
 
 
@@ -480,9 +432,8 @@ def increment_missed():
 
     ducks_missed += 1
 
-    digit_image = wx.Image(
-        letter_location + get_char_image(str(ducks_missed)), wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-    wx.FindWindowById(str_to_int(
+    digit_image = util.get_char_image(str(ducks_missed))
+    wx.FindWindowById(util.str_to_int(
         missed_id)).SetBitmap(digit_image)
 
 
@@ -508,58 +459,56 @@ def remove_all_timers():
 
 
 def clean_temp_elements():
-    element = wx.FindWindowById(str_to_int("TempElement"))
+    element = wx.FindWindowById(util.str_to_int("TempElement"))
     while element is not None:
         element.Destroy()
-        element = wx.FindWindowById(str_to_int("TempElement"))
+        element = wx.FindWindowById(util.str_to_int("TempElement"))
+
 
 def clean_high_score_elements():
-    element = wx.FindWindowById(str_to_int("HighScore"))
+    element = wx.FindWindowById(util.str_to_int("HighScore"))
     while element is not None:
         element.Destroy()
-        element = wx.FindWindowById(str_to_int("HighScore"))
+        element = wx.FindWindowById(util.str_to_int("HighScore"))
 
 
 def clean_ducks_elements():
-    element = wx.FindWindowById(str_to_int("DuckButton"))
+    element = wx.FindWindowById(util.str_to_int("DuckButton"))
     while element is not None:
         element.Destroy()
-        element = wx.FindWindowById(str_to_int("DuckButton"))
+        element = wx.FindWindowById(util.str_to_int("DuckButton"))
 
 
 def clean_whole_screen():
     for id in level_ids:
-        wx.FindWindowById(str_to_int(id)).Destroy()
+        wx.FindWindowById(util.str_to_int(id)).Destroy()
     for id in score_ids:
-        wx.FindWindowById(str_to_int(id)).Destroy()
-    wx.FindWindowById(str_to_int(missed_id)).Destroy()
+        wx.FindWindowById(util.str_to_int(id)).Destroy()
+    wx.FindWindowById(util.str_to_int(missed_id)).Destroy()
 
     clean_temp_elements()
     clean_ducks_elements()
 
+
 def show_high_scores():
     global main_frame
 
-    img = wx.Image(
-            picture_location + "CrossOut90.png", wx.BITMAP_TYPE_PNG).ConvertToBitmap()
-    wx.FindWindowById(str_to_int("HighScoreButton")).SetBitmap(img)
+    img = util.get_picture("CrossOut90.png")
+    wx.FindWindowById(util.str_to_int("HighScoreButton")).SetBitmap(img)
 
-    png = wx.Image(
-        picture_location + "HighScoreBackground1200x640.png", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-    wx.StaticBitmap(parent=main_frame, id=str_to_int("HighScore"), bitmap=png,
-                                    pos=((width-1200)/2, 160))
+    png = util.get_picture("HighScoreBackground1200x640.png")
+    wx.StaticBitmap(parent=main_frame, id=util.str_to_int("HighScore"), bitmap=png,
+                    pos=((width-1200)/2, 160))
     index = 1
     for character in "HIGH SCORES":
-        char = wx.Image(
-            letter_location + get_char_image(character), wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        wx.StaticBitmap(parent=main_frame, id=str_to_int("HighScore"), bitmap=char,
+        char = util.get_char_image(character)
+        wx.StaticBitmap(parent=main_frame, id=util.str_to_int("HighScore"), bitmap=char,
                         pos=((width/2) + ((index - 6) * 35), 170))
         index += 1
     index = 1
     for character in "DEVELOPED BY: WMCCALL":
-        char = wx.Image(
-            letter_location + get_char_image(character), wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        wx.StaticBitmap(parent=main_frame, id=str_to_int("HighScore"), bitmap=char,
+        char = util.get_char_image(character)
+        wx.StaticBitmap(parent=main_frame, id=util.str_to_int("HighScore"), bitmap=char,
                         pos=((width/2) + ((index - 11) * 35), 750))
         index += 1
 
@@ -567,25 +516,25 @@ def show_high_scores():
     for element in high_scores:
         flat_scores.append(high_scores[element])
 
-    sorted_scores = sorted(flat_scores, key=lambda cur_score: int(cur_score[0])) 
+    sorted_scores = sorted(
+        flat_scores, key=lambda cur_score: int(cur_score[0]))
     count = 0
     for element in reversed(sorted_scores):
         if count > 9:
             break
         index = 1
         for character in element[1] + " - " + str(element[0]):
-            char = wx.Image(
-                letter_location + get_char_image(character), wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-            wx.StaticBitmap(parent=main_frame, id=str_to_int("HighScore"), bitmap=char,
+            char = util.get_char_image(character)
+            wx.StaticBitmap(parent=main_frame, id=util.str_to_int("HighScore"), bitmap=char,
                             pos=((width/2) + ((index - 16) * 35), 230 + (45 * count)))
             index += 1
         count += 1
 
+
 def hide_high_scores():
     clean_high_score_elements()
-    img = wx.Image(
-            picture_location + "Trophy90.png", wx.BITMAP_TYPE_PNG).ConvertToBitmap()
-    wx.FindWindowById(str_to_int("HighScoreButton")).SetBitmap(img)
+    img = util.get_picture("Trophy90.png")
+    wx.FindWindowById(util.str_to_int("HighScoreButton")).SetBitmap(img)
 
 
 class Game(wx.Frame):
@@ -652,7 +601,8 @@ def update_high_scores_csv():
         writer = csv.writer(csv_file, delimiter=',',
                             quotechar='"', quoting=csv.QUOTE_MINIMAL)
         for index in high_scores:
-            writer.writerow([index, high_scores[index][0], high_scores[index][1]])
+            writer.writerow(
+                [index, high_scores[index][0], high_scores[index][1]])
 
 
 def reset_game():
@@ -663,7 +613,7 @@ def reset_game():
     ducks_missed = 0
     score = 0
     dt_now = datetime.now()
-    dt_string =dt_now.strftime("%d/%m/%Y %H:%M")
+    dt_string = dt_now.strftime("%d/%m/%Y %H:%M")
 
 
 def increment_game():
@@ -676,7 +626,7 @@ if __name__ == "__main__":
     read_high_scores_csv()
     app = wx.App()
     main_frame = MainFrame()
-    main_frame.SetDimensions(0, 0, width, height)
+    main_frame.SetSize(width=width, height=height)
     main_frame.AddChild(Background(main_frame))
     main_frame.AddChild(WelcomeSplash(main_frame))
     main_frame.AddChild(ClickableItems(main_frame))

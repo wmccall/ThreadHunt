@@ -1,7 +1,33 @@
+import wx
 import subprocess
 import signal
 import random
 
+# pylint: disable=no-member
+
+#
+# COMMON FIELDS
+#####################################
+
+picture_location = "src/images/"
+letter_location = picture_location + "characters/"
+char_exten = "35x45.png"
+
+letters = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L",
+           "M", "N", "O",  "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
+extras = ["?", "!", "-", ":", " ", "/",
+          "(", ")", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
+extras_converted = ["Qu", "Ex", "Da", "Co", "Sp", "Sl", "Lp", "Rp", "Zero",
+                    "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"]
+letter_images = [x + char_exten for x in letters+extras_converted]
+letter_dict = dict(zip(letters+extras, letter_images))
+
+id_strs = ["TempElement", "HighScore"]
+
+
+#
+#  USER UTILS
+#####################################
 
 def get_current_user():
     processes = subprocess.Popen(['whoami'], stdout=subprocess.PIPE)
@@ -9,6 +35,10 @@ def get_current_user():
     out_decoded = (out.decode('UTF-8')).strip()
     return out_decoded
 
+
+#
+#  PROCESS UTILS
+#####################################
 
 def get_pocesseses():
     processes = subprocess.Popen(['ps', '-aux'], stdout=subprocess.PIPE)
@@ -41,6 +71,10 @@ def get_all_processes():
     return flat
 
 
+#
+# KILL UTILS
+#####################################
+
 def kill_random_user_process(dry=False):
     user_process = get_current_user_processes()
     num_processes = len(user_process)
@@ -70,3 +104,36 @@ def kill_random_any_process(dry=False):
             ['kill', process[random_process]], stdout=subprocess.PIPE)
         out, _ = processes.communicate()
         _ = (out.decode('UTF-8')).strip()
+
+
+#
+# IMAGE UTILS
+#####################################
+
+def get_char_image(char):
+    image = letter_dict.get(char.upper())
+    if image is None:
+        image = letter_dict["-"]
+    return get_bitmap(letter_location + image)
+
+
+def get_picture(name):
+    return get_bitmap(picture_location + name)
+
+
+def get_bitmap(location):
+    return wx.Image(location, wx.BITMAP_TYPE_PNG).ConvertToBitmap()
+
+
+#
+# ID UTILS
+#####################################
+
+def str_to_int(id_str):
+    global id_strs
+    try:
+        location = id_strs.index(id_str)
+        return location
+    except:
+        id_strs.append(id_str)
+        return len(id_strs)-1
