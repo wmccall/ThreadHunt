@@ -54,6 +54,12 @@ foreground_objects = []
 id_strs = ["TempElement", "HighScore"]
 global main_frame
 
+def get_char_image(char):
+    image = letter_dict.get(char.upper())
+    if image is None:
+        return letter_dict["-"]
+    return image
+
 
 def str_to_int(id_str):
     global id_strs
@@ -202,7 +208,7 @@ class GameOver(wx.Frame):
         index = 1
         for character in "GAME OVER":
             char = wx.Image(
-                letter_location + letter_dict[character], wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+                letter_location + get_char_image(character), wx.BITMAP_TYPE_ANY).ConvertToBitmap()
             wx.StaticBitmap(parent=parent_frame, id=str_to_int("TempElement"), bitmap=char,
                             pos=((width/2) + ((index - 5) * 35), height/4))
             index += 1
@@ -210,14 +216,14 @@ class GameOver(wx.Frame):
         index = 1
         for character in "SCORE: ":
             char = wx.Image(
-                letter_location + letter_dict[character], wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+                letter_location + get_char_image(character), wx.BITMAP_TYPE_ANY).ConvertToBitmap()
             wx.StaticBitmap(parent=parent_frame, id=str_to_int("TempElement"), bitmap=char,
                             pos=((width/2) + ((index - 5) * 35), (height/4)+45))
             index += 1
 
         for character in str(score):
             char = wx.Image(
-                letter_location + letter_dict[character], wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+                letter_location + get_char_image(character), wx.BITMAP_TYPE_ANY).ConvertToBitmap()
             wx.StaticBitmap(parent=parent_frame, id=str_to_int("TempElement"), bitmap=char,
                             pos=((width/2) + ((index - 5) * 35), (height/4)+45))
             index += 1
@@ -251,7 +257,7 @@ class Level(wx.Frame):
         index = 1
         for character in "LEVEL: ":
             char = wx.Image(
-                letter_location + letter_dict[character], wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+                letter_location + get_char_image(character), wx.BITMAP_TYPE_ANY).ConvertToBitmap()
             wx.StaticBitmap(parent=parent_frame, id=str_to_int("TempElement"), bitmap=char,
                             pos=((width/2) + ((index - 15) * 35), 10))
             index += 1
@@ -274,7 +280,7 @@ class Missed(wx.Frame):
         index = 1
         for character in "MISSED: ":
             char = wx.Image(
-                letter_location + letter_dict[character], wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+                letter_location + get_char_image(character), wx.BITMAP_TYPE_ANY).ConvertToBitmap()
             wx.StaticBitmap(parent=parent_frame, id=str_to_int("TempElement"), bitmap=char,
                             pos=((width/2) + ((index - 1) * 35), 10))
             index += 1
@@ -286,13 +292,13 @@ class Missed(wx.Frame):
         index += 1
 
         char = wx.Image(
-            letter_location + letter_dict["/"], wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+            letter_location + get_char_image("/"), wx.BITMAP_TYPE_ANY).ConvertToBitmap()
         wx.StaticBitmap(parent=parent_frame, id=str_to_int("TempElement"), bitmap=char,
                         pos=((width/2) + ((index - 1) * 35), 10))
         index += 1
 
         char = wx.Image(
-            letter_location + letter_dict[str(max_ducks_missed)], wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+            letter_location + get_char_image(str(max_ducks_missed)), wx.BITMAP_TYPE_ANY).ConvertToBitmap()
         wx.StaticBitmap(parent=parent_frame, id=str_to_int("TempElement"), bitmap=char,
                         pos=((width/2) + ((index - 1) * 35), 10))
         index += 1
@@ -312,7 +318,7 @@ class Kill(wx.Frame):
         index = 0
         for killed_char in killed:
             letter_img = wx.Image(
-                letter_location + letter_dict[killed_char], wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+                letter_location + get_char_image(killed_char), wx.BITMAP_TYPE_ANY).ConvertToBitmap()
             wx.StaticBitmap(parent=parent_frame, id=str_to_int("TempElement"), bitmap=letter_img,
                             pos=((pos[0] + (index * 35), pos[1])))
             index += 1
@@ -321,7 +327,7 @@ class Kill(wx.Frame):
         for prog_char in prog_upper:
 
             letter_img = wx.Image(
-                letter_location + letter_dict[prog_char], wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+                letter_location + get_char_image(prog_char), wx.BITMAP_TYPE_ANY).ConvertToBitmap()
             wx.StaticBitmap(parent=parent_frame, id=str_to_int("TempElement"), bitmap=letter_img,
                             pos=((pos[0] + (index * 35), pos[1]+45)))
             index += 1
@@ -440,7 +446,7 @@ class Duck(wx.Frame):
 
 
 def add_and_update_score(points):
-    global score, score_ids, letter_dict
+    global score, score_ids
 
     score += points
     print(score)
@@ -453,13 +459,13 @@ def add_and_update_score(points):
         except:
             pass
         digit_image = wx.Image(
-            letter_location + letter_dict[str(int_digit)], wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+            letter_location + get_char_image(str(int_digit)), wx.BITMAP_TYPE_ANY).ConvertToBitmap()
         wx.FindWindowById(str_to_int(
             score_ids[index])).SetBitmap(digit_image)
 
 
 def increment_level():
-    global level, level_ids, letter_dict
+    global level, level_ids
 
     level += 1
 
@@ -471,18 +477,18 @@ def increment_level():
         except:
             pass
         digit_image = wx.Image(
-            letter_location + letter_dict[str(int_digit)], wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+            letter_location + get_char_image(str(int_digit)), wx.BITMAP_TYPE_ANY).ConvertToBitmap()
         wx.FindWindowById(str_to_int(
             level_ids[index])).SetBitmap(digit_image)
 
 
 def increment_missed():
-    global ducks_missed, missed_id, letter_dict
+    global ducks_missed, missed_id
 
     ducks_missed += 1
 
     digit_image = wx.Image(
-        letter_location + letter_dict[str(ducks_missed)], wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+        letter_location + get_char_image(str(ducks_missed)), wx.BITMAP_TYPE_ANY).ConvertToBitmap()
     wx.FindWindowById(str_to_int(
         missed_id)).SetBitmap(digit_image)
 
@@ -552,14 +558,14 @@ def show_high_scores():
     index = 1
     for character in "HIGH SCORES":
         char = wx.Image(
-            letter_location + letter_dict[character], wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+            letter_location + get_char_image(character), wx.BITMAP_TYPE_ANY).ConvertToBitmap()
         wx.StaticBitmap(parent=main_frame, id=str_to_int("HighScore"), bitmap=char,
                         pos=((width/2) + ((index - 6) * 35), 170))
         index += 1
     index = 1
     for character in "DEVELOPED BY: WMCCALL":
         char = wx.Image(
-            letter_location + letter_dict[character], wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+            letter_location + get_char_image(character), wx.BITMAP_TYPE_ANY).ConvertToBitmap()
         wx.StaticBitmap(parent=main_frame, id=str_to_int("HighScore"), bitmap=char,
                         pos=((width/2) + ((index - 11) * 35), 750))
         index += 1
@@ -576,7 +582,7 @@ def show_high_scores():
         index = 1
         for character in element[1] + " - " + str(element[0]):
             char = wx.Image(
-                letter_location + letter_dict[character], wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+                letter_location + get_char_image(character), wx.BITMAP_TYPE_ANY).ConvertToBitmap()
             wx.StaticBitmap(parent=main_frame, id=str_to_int("HighScore"), bitmap=char,
                             pos=((width/2) + ((index - 16) * 35), 230 + (45 * count)))
             index += 1
