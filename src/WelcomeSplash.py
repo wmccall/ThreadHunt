@@ -1,12 +1,12 @@
 import wx
-import util
+import Util
 # pylint: disable=no-member
 
 
 class WelcomeSplash(wx.Frame):
     tick = 1
     pos = [160, 165, 170, 180, 180, 175, 170, 160]
-    width, height = util.get_screen_dimensions()
+    width, height = Util.get_screen_dimensions()
 
     def __init__(self, parent_frame):
         super().__init__(parent=None, title='', style=wx.DEFAULT_FRAME_STYLE &
@@ -15,8 +15,8 @@ class WelcomeSplash(wx.Frame):
         self.timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.update, self.timer)
 
-        png = util.get_picture("ThreadHunt800x320.png")
-        self.splash = wx.StaticBitmap(parent=parent_frame, id=util.str_to_int("WelcomeSplash"), bitmap=png,
+        png = Util.get_picture("ThreadHunt800x320.png")
+        self.splash = wx.StaticBitmap(parent=parent_frame, id=Util.str_to_int("WelcomeSplash"), bitmap=png,
                                       pos=((self.width-800)/2, self.pos[0]))
 
         self.timer.Start(250)

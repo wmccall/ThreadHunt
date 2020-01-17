@@ -1,6 +1,6 @@
 import wx
 import random
-import util
+import Util
 
 from Foreground import Foreground
 from Kill import Kill
@@ -17,7 +17,7 @@ class Duck(wx.Frame):
 
     move_queue = 5
 
-    width, height = util.get_screen_dimensions()
+    width, height = Util.get_screen_dimensions()
 
     x_location = random.randint(600, width-600)
     y_location = height
@@ -29,31 +29,31 @@ class Duck(wx.Frame):
         self.parent_frame = parent_frame
 
         self.timer = wx.Timer(self)
-        self.timer_number = util.add_timer([self.timer, 10])
+        self.timer_number = Util.add_timer([self.timer, 10])
         self.Bind(wx.EVT_TIMER, self.update, self.timer)
 
-        duck_png = util.get_picture(self.image)
-        self.duck_button = wx.BitmapButton(parent=parent_frame, id=util.str_to_int("DuckButton"), bitmap=duck_png,
+        duck_png = Util.get_picture(self.image)
+        self.duck_button = wx.BitmapButton(parent=parent_frame, id=Util.str_to_int("DuckButton"), bitmap=duck_png,
                                            pos=(10, self.y_location), style=wx.NO_BORDER)
         self.duck_button.Bind(wx.EVT_LEFT_DOWN, self.duck_clicked)
         self.duck_button.Bind(wx.EVT_ENTER_WINDOW, self.duck_hover)
 
-        util.destroy_foreground_objects()
+        Util.destroy_foreground_objects()
         parent_frame.AddChild(Foreground(parent_frame))
 
         self.timer.Start(10)
 
     def update(self, timer):
-        if util.get_ducks_missed() == util.get_max_ducks_missed():
+        if Util.get_ducks_missed() == Util.get_max_ducks_missed():
             self.timer.Stop()
-            util.remove_timer(self.timer_number)
+            Util.remove_timer(self.timer_number)
             return
         if self.y_location <= -131:
             self.timer.Stop()
-            util.remove_timer(self.timer_number)
+            Util.remove_timer(self.timer_number)
             self.duck_button.Destroy()
-            util.increment_ducks_finished()
-            util.increment_missed()
+            Util.increment_ducks_finished()
+            Util.increment_missed()
             return
 
         if self.x_location < 300 and self.dir_int < 6:
@@ -90,23 +90,23 @@ class Duck(wx.Frame):
                 self.image = "DuckL130.png"
             else:
                 self.image = "DuckR130.png"
-        duck_img = util.get_picture(self.image)
+        duck_img = Util.get_picture(self.image)
         self.duck_button.SetBitmap(duck_img)
         self.duck_button.Move(x=self.x_location, y=self.y_location)
         self.duck_button.Update()
         self.move_queue -= 1
 
     def duck_clicked(self, event):
-        if not util.is_paused():
+        if not Util.is_paused():
             self.duck_button.Destroy()
             self.timer.Stop()
-            process_id, process_name = util.kill_random_user_process(
+            process_id, process_name = Util.kill_random_user_process(
                 dry=False)
-            util.add_and_update_score(int(process_id))
+            Util.add_and_update_score(int(process_id))
             self.parent_frame.AddChild(
                 Kill(self.parent_frame, (self.x_location, self.y_location), process_name))
-            util.update_high_scores_csv()
-            util.increment_ducks_finished()
+            Util.update_high_scores_csv()
+            Util.increment_ducks_finished()
 
     def duck_hover(self, event):
         self.duck_button.SetWindowStyleFlag(wx.NO_BORDER)
