@@ -1,5 +1,11 @@
 import wx
 import util
+
+
+from Score import Score
+from Level import Level
+from Missed import Missed
+from Game import Game
 # pylint: disable=no-member
 
 
@@ -28,7 +34,7 @@ class ClickableItems(wx.Frame):
         if not util.is_paused():
             self.start_button.Hide()
             wx.FindWindowById(util.str_to_int("WelcomeSplash")).Hide()
-            util.start_game(self.parent_frame)
+            self.start_game(self.parent_frame)
 
     def start_hover(self, event):
         self.start_button.SetWindowStyleFlag(wx.NO_BORDER)
@@ -43,3 +49,9 @@ class ClickableItems(wx.Frame):
 
     def info_hover(self, event):
         self.info_button.SetWindowStyleFlag(wx.NO_BORDER)
+
+    def start_game(self, main_frame):
+        main_frame.AddChild(Score(main_frame))
+        main_frame.AddChild(Level(main_frame))
+        main_frame.AddChild(Missed(main_frame))
+        main_frame.AddChild(Game(main_frame))

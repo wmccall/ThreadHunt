@@ -6,12 +6,6 @@ import time
 import csv
 from datetime import datetime
 
-
-from Score import Score
-from Level import Level
-from Missed import Missed
-from Game import Game
-
 # pylint: disable=no-member
 
 #
@@ -320,11 +314,14 @@ def remove_timer(timer_number):
 
 def remove_all_timers():
     global timers
-    try:
-        for timer_num in timers:
+    for timer_num in timers:
+        try:
+            timers[timer_num].Stop()
             del(timers[timer_num])
-    except:
-        pass
+            print(f'deleted: {timer_num}')
+        except:
+            pass
+    timers = []
 
 
 def is_paused():
@@ -345,16 +342,9 @@ max_ducks_missed = 3
 game_number = 0
 
 dt_now = datetime.now()
-dt_string = dt_now.strftime("%d/%m/%Y %H:%M")
+dt_string = dt_now.strftime("%m/%d/%Y %H:%M")
 
 high_scores = {}
-
-
-def start_game(main_frame):
-    main_frame.AddChild(Score(main_frame))
-    main_frame.AddChild(Level(main_frame))
-    main_frame.AddChild(Missed(main_frame))
-    main_frame.AddChild(Game(main_frame))
 
 
 def increment_level():
@@ -401,7 +391,7 @@ def reset_game():
     ducks_missed = 0
     score = 0
     dt_now = datetime.now()
-    dt_string = dt_now.strftime("%d/%m/%Y %H:%M")
+    dt_string = dt_now.strftime("%m/%d/%Y %H:%M")
 
 
 def increment_game():
